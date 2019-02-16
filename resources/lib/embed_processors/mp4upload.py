@@ -12,7 +12,7 @@ def retrieve_source_url(soup):
   player_div = soup.find('div', id="player")
 
   if not player_div:
-    return (AnimePieException("File was deleted"), None)
+    return (AnimePieException(ADDON.getLocalizedString(32000)), None)
   else:
     context = js2py.EvalJs()
     player_script = player_div.contents[0].text
@@ -22,6 +22,7 @@ def retrieve_source_url(soup):
     # uses addButton and on in various places so we define them so it doesn't
     # cause an exception and then define a jwplayer_config object that gets
     # populated with the values from when the jwplayer is initialized
+    # The initialization options passed in contains file which is the src for the player
     custom_script = '''
     var jwplayer_config = null
     var jwplayer = function() {
@@ -38,5 +39,5 @@ def retrieve_source_url(soup):
     context.execute(custom_script)
     context.execute(player_script)
 
-    logger.error(context.jwplayer_config["file"])
+    logger.debug(context.jwplayer_config["file"])
     return (None, context.jwplayer_config["file"])

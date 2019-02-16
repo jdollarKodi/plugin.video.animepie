@@ -140,8 +140,8 @@ def play_source():
     website_name = plugin.args["website_name"][0]
     source_url = plugin.args["source_url"][0]
 
-    logger.error("Website: " + website_name)
-    logger.error("Source URL: " + source_url)
+    logger.debug("Website: " + website_name)
+    logger.debug("Source URL: " + source_url)
 
     embedded_processors = {
         "ASTV.MP4UPLOAD": mp4upload,
@@ -166,9 +166,13 @@ def play_source():
                 xbmc.Player().play(decrypted_source, play_item)
         
         if not processor and not decrypted_source:
-            raise AnimePieException("Invalid Source")
+            raise AnimePieException(ADDON.getLocalizedString(32001))
+    except AnimePieException as e:
+        logger.error(e.args)
+        xbmc.executebuiltin("Notification(Error," + e.args[0] + ")")
     except Exception as e:
         logger.error(e.args)
+        xbmc.executebuiltin("Notification(Error," + str(e.args) + ")")
 
 def run():
     plugin.run()
