@@ -116,17 +116,27 @@ def play_source():
     logger.debug("Website: " + website_name)
     logger.debug("Source URL: " + source_url)
 
-    res = requests.get(source_url)
-    soup = BeautifulSoup(res.text, 'html.parser')
+    embedded_processors = {
+        "9A.Streamango": streamango
+    }
 
     decrypted_source = None
-    if (website_name == "9A.Streamango"):
-        decrypted_source = streamango.retrieve_source_url(soup)
+    processor = embedded_processors.get(website_name, None)
 
-    if (decrypted_source):
-        play_item = ListItem(path=decrypted_source)
-        xbmc.Player().play(decrypted_source, play_item)
-    else:
+    try:
+        if processor:
+            res = requests.get(source_url)
+            soup = BeautifulSoup(res.text, 'html.parser')
+            if processor:
+                decrypted_source = processor.retrieve_source_url(soup)
+
+            if (decrypted_source):
+                play_item = ListItem(path=decrypted_source)
+                xbmc.Player().play(decrypted_source, play_item)
+        
+        if not processor and not decrypted_source:
+            raise "Invalid Source"
+    except:
         logger.error('invalid source')
 
 @plugin.route('/category/<category_id>')
