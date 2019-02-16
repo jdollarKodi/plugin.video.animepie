@@ -19,4 +19,4 @@ def retrieve_source_url(soup):
 
     src_url = 'https:' + context.srces[0]['src']
     logger.debug('Decoded source url: ' + src_url)
-    return src_url
+    return (None, src_url)

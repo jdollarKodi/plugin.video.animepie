@@ -6,9 +6,9 @@ import logging
 import xbmcaddon
 import requests
 from bs4 import BeautifulSoup
-from resources.lib import kodiutils
-from resources.lib import kodilogging
-from resources.lib.embed_processors import streamango
+from resources.lib import kodiutils, kodilogging
+from resources.lib.animepie_exception import AnimePieException
+from resources.lib.embed_processors import mp4upload, streamango
 from itertools import repeat
 from xbmcgui import ListItem
 from xbmcplugin import addDirectoryItem, endOfDirectory, setResolvedUrl
@@ -113,10 +113,11 @@ def play_source():
     website_name = plugin.args["website_name"][0]
     source_url = plugin.args["source_url"][0]
 
-    logger.debug("Website: " + website_name)
-    logger.debug("Source URL: " + source_url)
+    logger.error("Website: " + website_name)
+    logger.error("Source URL: " + source_url)
 
     embedded_processors = {
+        "ASTV.MP4UPLOAD": mp4upload,
         "9A.Streamango": streamango
     }
 
@@ -128,16 +129,19 @@ def play_source():
             res = requests.get(source_url)
             soup = BeautifulSoup(res.text, 'html.parser')
             if processor:
-                decrypted_source = processor.retrieve_source_url(soup)
+                (err, decrypted_source) = processor.retrieve_source_url(soup)
+
+                if err:
+                    raise err
 
             if (decrypted_source):
                 play_item = ListItem(path=decrypted_source)
                 xbmc.Player().play(decrypted_source, play_item)
         
         if not processor and not decrypted_source:
-            raise "Invalid Source"
-    except:
-        logger.error('invalid source')
+            raise AnimePieException("Invalid Source")
+    except Exception as e:
+        logger.error(e.args)
 
 @plugin.route('/category/<category_id>')
 def show_category(category_id):
