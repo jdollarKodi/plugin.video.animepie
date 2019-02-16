@@ -30,10 +30,14 @@ def index():
 
 @plugin.route('/anime-list')
 def anime_list():
-    logger.debug("Anime list")
+    page = plugin.args["page"][0] if "page" in plugin.args else None
+
+    page = page if page else "1" 
+
+    logger.debug("Page: " + page)
 
     params = {
-        "page": "1",
+        "page": page,
         "limit": "15",
         "year": "2018",
         "season": "Summer",
@@ -49,6 +53,16 @@ def anime_list():
         addDirectoryItem(plugin.handle, plugin.url_for(
             episode_list, id=anime["animeID"], listId=anime["animeListID"], episode_count=anime["animeEpisode"]), ListItem(anime["animeName"]), True)
         logger.debug(anime["animeName"])
+
+    addDirectoryItem(
+        plugin.handle, 
+        plugin.url_for(
+            anime_list, page=int(page) + 1
+        ),
+        ListItem('Next Page'),
+        True
+    )
+
     endOfDirectory(plugin.handle)
 
 @plugin.route('search')
