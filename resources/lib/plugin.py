@@ -50,8 +50,16 @@ def anime_list():
     res = requests.get(BASE_URL + LIST_PATH, params=params)
     json_data = res.json()
     for anime in json_data["data"]["list"]:
-        addDirectoryItem(plugin.handle, plugin.url_for(
-            episode_list, id=anime["animeID"], listId=anime["animeListID"], episode_count=anime["animeEpisode"]), ListItem(anime["animeName"]), True)
+        addDirectoryItem(
+            plugin.handle,
+            plugin.url_for(
+                episode_list,
+                id=anime["animeID"],
+                listId=anime["animeListID"],
+                episode_count=anime["animeEpisode"]
+            ), ListItem(anime["animeName"]),
+            True
+        )
         logger.debug(anime["animeName"])
 
     addDirectoryItem(
@@ -78,8 +86,17 @@ def episode_list():
 
     for i in range(int(episode_count)):
         episode = str(i + 1)
-        addDirectoryItem(plugin.handle, plugin.url_for(
-            video_sources, id=anime_id, listId=anime_list_id, episode=episode), ListItem("Episode " + episode), True)
+        addDirectoryItem(
+            plugin.handle, 
+            plugin.url_for(
+                video_sources,
+                id=anime_id,
+                listId=anime_list_id,
+                episode=episode
+            ),
+            ListItem("Episode " + episode), 
+            True
+        )
 
     endOfDirectory(plugin.handle)
 
@@ -103,8 +120,18 @@ def video_sources():
     json_data = res.json()
 
     for source in json_data["data"]["animeWebSiteSrc"]:
+        # Website only does the first link. We're using all defined though
         for src in source["srclist"]:
-            addDirectoryItem(plugin.handle, plugin.url_for(play_source, source_url=src["src"], website_name=src["website"]), ListItem(src["website"]), True)
+            addDirectoryItem(
+                plugin.handle,
+                plugin.url_for(
+                    play_source,
+                    source_url=src["src"],
+                    website_name=src["website"]
+                ),
+                ListItem(src["website"]),
+                True
+            )
 
     endOfDirectory(plugin.handle)
 
@@ -142,12 +169,6 @@ def play_source():
             raise AnimePieException("Invalid Source")
     except Exception as e:
         logger.error(e.args)
-
-@plugin.route('/category/<category_id>')
-def show_category(category_id):
-    addDirectoryItem(
-        plugin.handle, "", ListItem("Hello category %s!" % category_id))
-    endOfDirectory(plugin.handle)
 
 def run():
     plugin.run()
