@@ -1,2 +1,4 @@
 pytest
+pytest-cov
 mock
+js2py==0.60
