@@ -10,6 +10,7 @@ from resources.lib import kodiutils, kodilogging
 from resources.lib.animepie_exception import AnimePieException
 from resources.lib.embed_processors import mp4upload, streamango
 from resources.lib.routes.index import index
+from resources.lib.routes.animelist import anime_list
 from itertools import repeat
 from xbmcgui import ListItem
 from xbmcplugin import addDirectoryItem, endOfDirectory, setResolvedUrl
@@ -28,49 +29,8 @@ def root():
     index(plugin)
 
 @plugin.route('/anime-list')
-def anime_list():
-    page = plugin.args["page"][0] if "page" in plugin.args else None
-
-    page = page if page else "1" 
-
-    logger.debug("Page: " + page)
-
-    params = {
-        "page": page,
-        "limit": "15",
-        "year": "2018",
-        "season": "Summer",
-        "genres": "",
-        "sort": "1",
-        "sort2": "",
-        "website": ""
-    }
-
-    res = requests.get(BASE_URL + LIST_PATH, params=params)
-    json_data = res.json()
-    for anime in json_data["data"]["list"]:
-        addDirectoryItem(
-            plugin.handle,
-            plugin.url_for(
-                episode_list,
-                id=anime["animeID"],
-                listId=anime["animeListID"],
-                episode_count=anime["animeEpisode"]
-            ), ListItem(anime["animeName"]),
-            True
-        )
-        logger.debug(anime["animeName"])
-
-    addDirectoryItem(
-        plugin.handle, 
-        plugin.url_for(
-            anime_list, page=int(page) + 1
-        ),
-        ListItem('Next Page'),
-        True
-    )
-
-    endOfDirectory(plugin.handle)
+def full_list():
+    anime_list(plugin)
 
 @plugin.route('/search')
 def anime_search():
