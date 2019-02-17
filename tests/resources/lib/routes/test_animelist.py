@@ -4,7 +4,7 @@ import json
 import unittest
 from mock import call, patch, MagicMock, Mock, ANY
 
-# TODO: Check get params to ensure those match what is expected
+# TODO: Check get params of request to ensure those match what is expected
 
 class TestAnimeList(unittest.TestCase):
     def setUp(self):
@@ -48,10 +48,16 @@ class TestAnimeList(unittest.TestCase):
         anime_list(mock_plugin, None, "episode", "full")
 
         expected_list_item_calls = [
-            call("Gintama.: Shirogane no Tamashii-hen 2"),
-            call("Gintama.: Silver Soul Arc - Second Half War"),
-            call("Gintama.: Shirogane no Tamashii-hen - Kouhan-sen"),
-            call("Next Page"),
+            call('Gintama.: Shirogane no Tamashii-hen 2'),
+            call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
+            call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
+            call('Gintama.: Silver Soul Arc - Second Half War'),
+            call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
+            call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
+            call('Gintama.: Shirogane no Tamashii-hen - Kouhan-sen'),
+            call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
+            call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
+            call('Next Page')
         ]
 
         # self.mock_xbmc_gui.ListItem.assert_has_calls(expected_list_item_calls)
@@ -107,10 +113,16 @@ class TestAnimeList(unittest.TestCase):
         anime_list(mock_plugin, "1", "episode", "full")
 
         expected_list_item_calls = [
-            call("Gintama.: Shirogane no Tamashii-hen 2"),
-            call("Gintama.: Silver Soul Arc - Second Half War"),
-            call("Gintama.: Shirogane no Tamashii-hen - Kouhan-sen"),
-            call("Next Page"),
+            call('Gintama.: Shirogane no Tamashii-hen 2'),
+            call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
+            call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
+            call('Gintama.: Silver Soul Arc - Second Half War'),
+            call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
+            call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
+            call('Gintama.: Shirogane no Tamashii-hen - Kouhan-sen'),
+            call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
+            call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
+            call('Next Page')
         ]
 
         self.mock_xbmc_gui.ListItem.assert_has_calls(expected_list_item_calls)
@@ -166,9 +178,15 @@ class TestAnimeList(unittest.TestCase):
         anime_list(mock_plugin, "8", "episode", "full")
 
         expected_list_item_calls = [
-            call("Gintama.: Shirogane no Tamashii-hen 2"),
-            call("Gintama.: Silver Soul Arc - Second Half War"),
-            call("Gintama.: Shirogane no Tamashii-hen - Kouhan-sen"),
+            call('Gintama.: Shirogane no Tamashii-hen 2'),
+            call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
+            call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
+            call('Gintama.: Silver Soul Arc - Second Half War'),
+            call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
+            call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
+            call('Gintama.: Shirogane no Tamashii-hen - Kouhan-sen'),
+            call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
+            call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
         ]
 
         self.assertEquals(self.mock_xbmc_gui.ListItem.call_count, 3)

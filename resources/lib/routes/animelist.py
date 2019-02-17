@@ -29,6 +29,13 @@ def anime_list(plugin, selected_page, episode_list_func, original_caller):
     res = requests.get(BASE_URL + LIST_PATH, params=params)
     json_data = res.json()
     for anime in json_data["data"]["list"]:
+        image = anime['backgroundSrc'] if anime['backgroundSrc'] else None
+        info = anime['animeSynopsis'] if anime['animeSynopsis'] else ''
+
+        li = ListItem(anime["animeName"])
+        li.setArt({'icon': image })
+        li.setInfo(type='video', infoLabels={'plot': info})
+
         addDirectoryItem(
             plugin.handle,
             plugin.url_for(
@@ -36,7 +43,7 @@ def anime_list(plugin, selected_page, episode_list_func, original_caller):
                 id=anime["animeID"],
                 listId=anime["animeListID"],
                 episode_count=anime["animeEpisode"]
-            ), ListItem(anime["animeName"]),
+            ), li,
             True
         )
 
