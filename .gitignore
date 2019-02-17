@@ -2,6 +2,8 @@
 *.pyo
 .DS*
 .pylint_rc
+.pytest_cache
+*/__pycache__/
 /.idea
 /.project
 /.pydevproject
