@@ -5,6 +5,7 @@ import routing
 import logging
 import xbmcaddon
 import requests
+import resolveurl
 from bs4 import BeautifulSoup
 from resources.lib import kodiutils, kodilogging
 from resources.lib.animepie_exception import AnimePieException
@@ -103,12 +104,12 @@ def play_source():
     logger.debug("Source URL: " + source_url)
 
     embedded_processors = {
-        "ASTV.MP4UPLOAD": mp4upload,
-        "9A.Streamango": streamango
+        "MP4UPLOAD": mp4upload,
+        "Streamango": streamango,
     }
 
     decrypted_source = None
-    processor = embedded_processors.get(website_name, None)
+    processor = embedded_processors.get(website_name.split(".")[1], None)
 
     try:
         if processor:
@@ -119,19 +120,20 @@ def play_source():
 
                 if err:
                     raise err
-
-            if (decrypted_source):
-                play_item = ListItem(path=decrypted_source)
-                xbmc.Player().play(decrypted_source, play_item)
+        else:
+            For sources without custom logic use the urlresolver package
+            decrypted_source = resolveurl.resolve(source_url)
+            logger.debug(decrypted_source)
         
         if not processor and not decrypted_source:
             raise AnimePieException(ADDON.getLocalizedString(32001))
+        elif decrypted_source:
+            play_item = ListItem(path=decrypted_source)
+            xbmc.Player().play(decrypted_source, play_item)
+
     except AnimePieException as e:
         logger.error(e.args)
         xbmc.executebuiltin("Notification(Error," + e.args[0] + ")")
-    except Exception as e:
-        logger.error(e.args)
-        xbmc.executebuiltin("Notification(Error," + str(e.args) + ")")
 
 def run():
     plugin.run()
