@@ -30,7 +30,7 @@ def root():
 
 @plugin.route('/anime-list')
 def full_list():
-    anime_list(plugin)
+    anime_list(plugin, episode_list, full_list)
 
 @plugin.route('/search')
 def anime_search():

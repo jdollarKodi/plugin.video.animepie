@@ -1,0 +1,45 @@
+{
+  "result": "ok",
+  "msg": "Get anime list success",
+  "data": {
+    "count": 106,
+    "list": [
+      {
+        "animeID": 25807,
+        "animeListID": 28690,
+        "animeName": "Gintama.: Shirogane no Tamashii-hen 2",
+        "animeEpisode": 14,
+        "backgroundSrc": "https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg",
+        "animePoint": "8.94",
+        "animeSynopsis": "Second Season of the final arc of Gintama.",
+        "animeGenres": "Action, Comedy, Historical, Parody, Samurai, Sci-Fi, Shounen",
+        "animeWebSite": "myanimelist",
+        "animePremiered": "Summer 2018"
+      },
+      {
+        "animeID": 1721252,
+        "animeListID": 1054055,
+        "animeName": "Gintama.: Silver Soul Arc - Second Half War",
+        "animeEpisode": 13,
+        "backgroundSrc": "https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg",
+        "animePoint": "8.84",
+        "animeSynopsis": "Second Season of the final arc of Gintama.",
+        "animeGenres": "Action, Comedy, Historical, Parody, Samurai, Sci-Fi, Shounen",
+        "animeWebSite": "myanimelist",
+        "animePremiered": "Summer 2018"
+      },
+      {
+        "animeID": 2668920,
+        "animeListID": 1505974,
+        "animeName": "Gintama.: Shirogane no Tamashii-hen - Kouhan-sen",
+        "animeEpisode": 14,
+        "backgroundSrc": "https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg",
+        "animePoint": "8.84",
+        "animeSynopsis": "Second Season of the final arc of Gintama.",
+        "animeGenres": "Action, Comedy, Historical, Parody, Samurai, Sci-Fi, Shounen",
+        "animeWebSite": "myanimelist",
+        "animePremiered": "Summer 2018"
+      }
+    ]
+  }
+}
