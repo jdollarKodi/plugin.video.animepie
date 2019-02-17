@@ -10,10 +10,8 @@ from resources.lib.constants.url import BASE_URL, LIST_PATH
 ADDON = xbmcaddon.Addon()
 logger = logging.getLogger(ADDON.getAddonInfo('id'))
 
-def anime_list(plugin, episode_list_func, original_caller):
-    page = plugin.args["page"][0] if "page" in plugin.args else None
-
-    page = page if page else "1" 
+def anime_list(plugin, selected_page, episode_list_func, original_caller):
+    page = selected_page if selected_page else "1" 
 
     logger.debug("Page: " + page)
 

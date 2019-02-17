@@ -27,12 +27,11 @@ class TestAnimeList(unittest.TestCase):
     def tearDown(self):
         self.module_patcher.stop()
 
-    def test_successful_retrieval_page_one_no_args(self):
+    def test_successful_retrieval_page_one_none_page(self):
         handle_val = "Random"
         mock_url = "Random-url"
 
         mock_plugin = type('', (), {})
-        mock_plugin.args = {}
         mock_plugin.handle = handle_val
         mock_plugin.url_for = Mock(return_value=mock_url)
 
@@ -46,7 +45,7 @@ class TestAnimeList(unittest.TestCase):
         self.mock_requests.get = Mock(return_value=res_mock)
 
         from resources.lib.routes.animelist import anime_list
-        anime_list(mock_plugin, "episode", "full")
+        anime_list(mock_plugin, None, "episode", "full")
 
         expected_list_item_calls = [
             call("Gintama.: Shirogane no Tamashii-hen 2"),
@@ -87,14 +86,11 @@ class TestAnimeList(unittest.TestCase):
         
         self.mock_xbmc_plugin.addDirectoryItem.assert_has_calls(expected_calls)
 
-    def test_successful_retrieval_page_one_with_args(self):
+    def test_successful_retrieval_page_one_with_selected(self):
         handle_val = "Random"
         mock_url = "Random-url"
 
         mock_plugin = type('', (), {})
-        mock_plugin.args = {
-            "page": "1"
-        }
         mock_plugin.handle = handle_val
         mock_plugin.url_for = Mock(return_value=mock_url)
 
@@ -108,7 +104,7 @@ class TestAnimeList(unittest.TestCase):
         self.mock_requests.get = Mock(return_value=res_mock)
 
         from resources.lib.routes.animelist import anime_list
-        anime_list(mock_plugin, "episode", "full")
+        anime_list(mock_plugin, "1", "episode", "full")
 
         expected_list_item_calls = [
             call("Gintama.: Shirogane no Tamashii-hen 2"),
@@ -154,9 +150,6 @@ class TestAnimeList(unittest.TestCase):
         mock_url = "Random-url"
 
         mock_plugin = type('', (), {})
-        mock_plugin.args = {
-            "page": "8"
-        }
         mock_plugin.handle = handle_val
         mock_plugin.url_for = Mock(return_value=mock_url)
 
@@ -170,7 +163,7 @@ class TestAnimeList(unittest.TestCase):
         self.mock_requests.get = Mock(return_value=res_mock)
 
         from resources.lib.routes.animelist import anime_list
-        anime_list(mock_plugin, "episode", "full")
+        anime_list(mock_plugin, "8", "episode", "full")
 
         expected_list_item_calls = [
             call("Gintama.: Shirogane no Tamashii-hen 2"),

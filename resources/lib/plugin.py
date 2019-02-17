@@ -31,7 +31,8 @@ def root():
 
 @plugin.route('/anime-list')
 def full_list():
-    anime_list(plugin, episode_list, full_list)
+    page = plugin.args["page"][0] if "page" in plugin.args else None
+    anime_list(plugin, page, episode_list, full_list)
 
 @plugin.route('/search')
 def anime_search():
@@ -121,7 +122,7 @@ def play_source():
                 if err:
                     raise err
         else:
-            For sources without custom logic use the urlresolver package
+            # For sources without custom logic use the urlresolver package
             decrypted_source = resolveurl.resolve(source_url)
             logger.debug(decrypted_source)
         
