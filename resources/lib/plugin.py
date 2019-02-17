@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 from resources.lib import kodiutils, kodilogging
 from resources.lib.animepie_exception import AnimePieException
 from resources.lib.embed_processors import mp4upload, streamango
+from resources.lib.routes.index import index
 from itertools import repeat
 from xbmcgui import ListItem
 from xbmcplugin import addDirectoryItem, endOfDirectory, setResolvedUrl
@@ -23,10 +24,8 @@ LIST_PATH="/Anime/AnimeMain/List"
 HOME_DETAIL_PATH="/Anime/AnimeMain/HomeDetail"
 
 @plugin.route('/')
-def index():
-    addDirectoryItem(plugin.handle, plugin.url_for(anime_list), ListItem("Anime List"), True)
-    addDirectoryItem(plugin.handle, plugin.url_for(anime_search), ListItem('Search'), True)
-    endOfDirectory(plugin.handle)
+def root():
+    index(plugin)
 
 @plugin.route('/anime-list')
 def anime_list():
@@ -73,7 +72,7 @@ def anime_list():
 
     endOfDirectory(plugin.handle)
 
-@plugin.route('search')
+@plugin.route('/search')
 def anime_search():
     logger.debug('Search')
     endOfDirectory(plugin.handle)

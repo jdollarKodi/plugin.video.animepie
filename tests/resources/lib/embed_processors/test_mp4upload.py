@@ -37,6 +37,7 @@ class TestMp4UploadProcessor(unittest.TestCase):
 
       (err, src_url) = mp4upload.retrieve_source_url(soup)
       self.assertIsInstance(err, AnimePieException)
+      mock_addon_inst.getLocalizedString.assert_called_once_with(32000)
       self.assertEqual(err.args[0], localized_string)
       self.assertIsNone(src_url)
 
