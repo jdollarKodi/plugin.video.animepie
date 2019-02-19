@@ -12,6 +12,8 @@ from resources.lib.animepie_exception import AnimePieException
 from resources.lib.embed_processors import mp4upload, streamango
 from resources.lib.routes.index import index
 from resources.lib.routes.animelist import anime_list
+from resources.lib.routes.routes import generate_all_routes
+from resources.lib.router_factory import get_router_instance
 from itertools import repeat
 from xbmcgui import ListItem
 from xbmcplugin import addDirectoryItem, endOfDirectory, setResolvedUrl
@@ -19,20 +21,11 @@ from xbmcplugin import addDirectoryItem, endOfDirectory, setResolvedUrl
 ADDON = xbmcaddon.Addon()
 logger = logging.getLogger(ADDON.getAddonInfo('id'))
 kodilogging.config()
-plugin = routing.Plugin()
+plugin = get_router_instance()
 
 BASE_URL="https://api.animepie.to"
 LIST_PATH="/Anime/AnimeMain/List"
 HOME_DETAIL_PATH="/Anime/AnimeMain/HomeDetail"
-
-@plugin.route('/')
-def root():
-    index(plugin)
-
-@plugin.route('/anime-list')
-def full_list():
-    page = plugin.args["page"][0] if "page" in plugin.args else None
-    anime_list(plugin, page, episode_list, full_list)
 
 @plugin.route('/search')
 def anime_search():
@@ -137,4 +130,5 @@ def play_source():
         xbmc.executebuiltin("Notification(Error," + e.args[0] + ")")
 
 def run():
+    generate_all_routes(plugin)
     plugin.run()

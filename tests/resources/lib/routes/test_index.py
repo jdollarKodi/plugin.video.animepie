@@ -38,8 +38,12 @@ class TestIndex(unittest.TestCase):
     mock_plugin.handle = handle_val
     mock_plugin.url_for_path = staticmethod(lambda url: url)
 
+    mock_route_factory = MagicMock()
+    mock_route_factory.get_router_instance = mock_plugin
+    sys.modules['resources.lib.router_factory'] = mock_route_factory
+
     from resources.lib.routes.index import index
-    index(mock_plugin)
+    index()
 
     # The call to listItems is a little weird
     calls_to_addDirectoryItem = [
