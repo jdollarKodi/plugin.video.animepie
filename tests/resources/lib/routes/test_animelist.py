@@ -23,6 +23,7 @@ class TestAnimeList(unittest.TestCase):
             "xbmcplugin": self.mock_xbmc_plugin,
             "xbmcgui": self.mock_xbmc_gui,
             "xbmcadddon": MagicMock(),
+            "resolveurl": MagicMock(),
             "resources.lib.router_factory": self.mock_route_factory
         }
 
@@ -229,11 +230,7 @@ class TestAnimeList(unittest.TestCase):
         mock_plugin = type('', (), {})
         mock_plugin.args = {}
         mock_plugin.handle = handle_val
-        mock_plugin.url_for = Mock(return_value=mock_url)
-
-        mock_route_factory = MagicMock()
-        mock_route_factory.get_router_instance = mock_plugin
-        sys.modules['resources.lib.router_factory'] = mock_route_factory
+        mock_plugin.url_for = MagicMock()
 
         fixture_path = self.dir_path + "/fixtures/animeList/list_success.json"
 
@@ -241,13 +238,13 @@ class TestAnimeList(unittest.TestCase):
             mock_response = fixture.read()
 
         res_mock = MagicMock()
-        res_mock.json = Mock(return_value=json.loads(mock_response))
-        self.mock_requests.get = Mock(return_value=res_mock)
+        res_mock.json.return_value = json.loads(mock_response)
+        self.mock_requests.get.return_value = res_mock
 
         from resources.lib.routes.animelist import anime_list
         anime_list()
 
-        expected_list_item_calls = [
+        self.mock_xbmc_gui.ListItem.assert_has_calls([
             call('Gintama.: Shirogane no Tamashii-hen 2'),
             call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
             call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
@@ -258,39 +255,7 @@ class TestAnimeList(unittest.TestCase):
             call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
             call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
             call('Next Page')
-        ]
-
-        # self.mock_xbmc_gui.ListItem.assert_has_calls(expected_list_item_calls)
-
-        # Need to check for order of list items added
-        expected_calls = [
-            call(
-                handle_val,
-                mock_url,
-                ANY,
-                True
-            ),
-            call(
-                handle_val,
-                mock_url,
-                ANY,
-                True
-            ),
-            call(
-                handle_val,
-                mock_url,
-                ANY,
-                True
-            ),
-            call(
-                handle_val,
-                mock_url,
-                ANY,
-                True
-            ),
-        ]
-        
-        self.mock_xbmc_plugin.addDirectoryItem.assert_has_calls(expected_calls)
+        ])
 
     def test_successful_retrieval_page_one_with_selected(self):
         handle_val = "Random"

@@ -21,6 +21,7 @@ class TestIndex(unittest.TestCase):
       self.mock_xbmc_addon_inst = mock_xbmc_addon_inst
 
       modules = {
+        'resolveurl': MagicMock(),
         'xbmcaddon': self.mock_xbmc_addon,
         'xbmcgui': self.mock_xbmc_gui,
         'xbmcplugin': self.mock_xbmc_plugin
