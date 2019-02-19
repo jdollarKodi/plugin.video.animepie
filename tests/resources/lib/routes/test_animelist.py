@@ -35,175 +35,204 @@ class TestAnimeList(unittest.TestCase):
         from resources.lib.routes.animelist import _get_current_params
 
         expected_year = "2000"
+        expected_season = "Winter"
 
         mock_plugin = type('', (), {})
         mock_plugin.args = {
-            "year": [expected_year]
+            "year": [expected_year],
+            "season": [expected_season]
         }
 
         args = _get_current_params(mock_plugin)
 
         self.assertDictEqual(args, {
-            "year": expected_year
+            "year": expected_year,
+            "season": expected_season
+        }, "Returned parameter list does not match plugin.arg values")
+
+    def test_get_current_params_returns_default_values_if_none(self):
+        from resources.lib.routes.animelist import _get_current_params
+
+        expected_year = "2018"
+        expected_season = "Fall"
+
+        mock_plugin = type('', (), {})
+        mock_plugin.args = {}
+
+        args = _get_current_params(mock_plugin)
+
+        self.assertDictEqual(args, {
+            "year": expected_year,
+            "season": expected_season
         }, "Returned parameter list does not match plugin.arg values")
 
     def test_should_create_menu_items_with_args_provided(self):
         handle_val = "Random"
-
-        from resources.lib.routes.animelist import _display_filter_menu_items, year_select
-
-        mock_route_list = {
-            year_select: 'year_select'
+        filter_value = { 
+            "year": "2018",
+            "season": "Winter"
         }
+
+        from resources.lib.routes.animelist import _display_filter_menu_items, anime_list, year_select, season_select
 
         mock_plugin = type('', (), {})
         mock_plugin.handle = handle_val
-        mock_plugin.url_for = staticmethod(lambda select: mock_route_list[year_select])
+        mock_plugin.url_for = MagicMock()
 
         self.mock_route_factory.get_router_instance.return_value = mock_plugin
 
-        _display_filter_menu_items(mock_plugin, { "year": "2018" })
+        _display_filter_menu_items(mock_plugin, filter_value)
 
         self.mock_xbmc_gui.ListItem.assert_has_calls([
             call("Year: 2018"),
+            call("Season: Winter"),
             call("Search")
         ])
-        
-        self.mock_xbmc_plugin.addDirectoryItem.assert_has_calls([
-            call(
-                handle_val,
-                mock_route_list[year_select],
-                ANY,
-                True
-            ),
-            call(
-                handle_val,
-                None,
-                ANY,
-                True
-            ),
+
+        mock_plugin.url_for.assert_has_calls([
+            call(year_select, **filter_value),
+            call(season_select, **filter_value),
+            call(anime_list, **filter_value)
         ])
+        
+        self.mock_xbmc_plugin.addDirectoryItem.assert_has_calls(
+            map(lambda x: call(handle_val, ANY, ANY, True), range(0, 3))
+        )
 
     def test_should_create_menu_items_with_empty_args(self):
         handle_val = "Random"
 
-        from resources.lib.routes.animelist import _display_filter_menu_items, year_select
-
-        mock_route_list = {
-            year_select: 'year_select'
-        }
+        from resources.lib.routes.animelist import _display_filter_menu_items, anime_list, year_select, season_select
 
         mock_plugin = type('', (), {})
         mock_plugin.handle = handle_val
-        mock_plugin.url_for = staticmethod(lambda select: mock_route_list[select])
+        mock_plugin.url_for = MagicMock()
 
         self.mock_route_factory.get_router_instance.return_value = mock_plugin
 
         _display_filter_menu_items(mock_plugin, {})
 
-
-        expected_list_item_calls = [
+        self.mock_xbmc_gui.ListItem.assert_has_calls([
             call("Year: "),
+            call("Season: "),
             call("Search")
-        ]
+        ])
 
-        self.mock_xbmc_gui.ListItem.assert_has_calls(expected_list_item_calls)
-
-        expected_calls = [
-            call(
-                handle_val,
-                mock_route_list[year_select],
-                ANY,
-                True
-            ),
-            call(
-                handle_val,
-                None,
-                ANY,
-                True
-            ),
-        ]
+        mock_plugin.url_for.assert_has_calls([
+            call(year_select),
+            call(season_select),
+            call(anime_list)
+        ])
         
-        self.mock_xbmc_plugin.addDirectoryItem.assert_has_calls(expected_calls)
+        self.mock_xbmc_plugin.addDirectoryItem.assert_has_calls(
+            map(lambda x: call(handle_val, ANY, ANY, True), range(0, 3))
+        )
 
-    def test_year_select_calls_year_select_and_generates_menu_items(self):
+    def test_year_select_calls_year_select_dialog_and_generates_menu_items(self):
         handle_val = "Random"
+        default_filter = {
+            "year": "2018",
+            "season": "Fall",
+        }
 
         self.mock_xbmc_gui.Dialog.return_value.select.return_value = 1
 
-        from resources.lib.routes.animelist import year_select
-
-        mock_route_list = {
-            year_select: 'year_select'
-        }
+        from resources.lib.routes.animelist import anime_list, year_select, season_select
 
         mock_plugin = type('', (), {})
         mock_plugin.args = {}
         mock_plugin.handle = handle_val
-        mock_plugin.url_for = staticmethod(lambda select: mock_route_list[select])
+        mock_plugin.url_for = MagicMock()
 
         self.mock_route_factory.get_router_instance.return_value = mock_plugin
 
         year_select()
 
         self.mock_xbmc_gui.ListItem.assert_has_calls([
-            call("Year: 2018"),
+            call("Year: " + default_filter.get("year")),
+            call("Season: " + default_filter.get("season")),
             call("Search")
         ])
 
-        self.mock_xbmc_plugin.addDirectoryItem.assert_has_calls([
-            call(
-                handle_val,
-                mock_route_list[year_select],
-                ANY,
-                True
-            ),
-            call(
-                handle_val,
-                None,
-                ANY,
-                True
-            ),
+        mock_plugin.url_for.assert_has_calls([
+            call(year_select, **default_filter),
+            call(season_select, **default_filter),
+            call(anime_list, **default_filter)
         ])
 
+        self.mock_xbmc_plugin.endOfDirectory.assert_called_once_with(handle_val)
 
-# def year_select():
-#     logger.debug("Year Select")
-#     plugin = get_router_instance()
-#     args = _get_current_params(plugin)
+    def test_year_select_calls_generates_menu_items_based_on_args_if_nothing_selected(self):
+        handle_val = "Random"
+        filter_values = {
+            "year": "2009",
+            "season": "Fall"
+        }
 
-#     res = Dialog().select("Choose a year", years)
+        self.mock_xbmc_gui.Dialog.return_value.select.return_value = -1
 
-#     if res >= 0:
-#         args[YEAR_ARG_KEY] = years[res]
+        from resources.lib.routes.animelist import anime_list, year_select, season_select
 
-#     display_filter_menu_items(plugin, args)
-#     endOfDirectory(plugin.handle)
+        mock_plugin = type('', (), {})
+        mock_plugin.args = {
+            "year": [filter_values.get("year")]
+        }
+        mock_plugin.handle = handle_val
+        mock_plugin.url_for = MagicMock()
 
-# def _display_filter_menu_items(plugin, filter_values):
-#     generate_text = lambda label, filter_map, key: label % (filter_map[key] if key in filter_map else '')
+        self.mock_route_factory.get_router_instance.return_value = mock_plugin
 
-#     filter_menu_items = [
-#         {
-#             "filter_func": year_select,
-#             "label": "Year: %s"
-#         }
-#     ]
+        year_select()
 
-#     for menu_item in filter_menu_items:
-#         addDirectoryItem(
-#             plugin.handle,
-#             plugin.url_for(menu_item.get("filter_func")),
-#             ListItem(generate_text(menu_item.get("label"), filter_values, YEAR_ARG_KEY)),
-#             True
-#         )
+        mock_plugin.url_for.assert_has_calls([
+            call(year_select, **filter_values),
+            call(season_select, **filter_values),
+            call(anime_list, **filter_values)
+        ])
 
-#     addDirectoryItem(
-#         plugin.handle,
-#         None,
-#         ListItem("Search"),
-#         True
-#     )
+        self.mock_xbmc_gui.ListItem.assert_has_calls([
+            call("Year: " + filter_values.get("year")),
+            call("Season: " + filter_values.get("season")),
+            call("Search")
+        ])
+
+        self.mock_xbmc_plugin.endOfDirectory.assert_called_once_with(handle_val)
+    
+    def test_season_select_calls_season_select_dialog_and_generates_menu_items_with_passed_in_if_none_selected(self):
+        handle_val = "Random"
+        filter_values = {
+            "year": "2018",
+            "season": "Winter"
+        }
+
+        self.mock_xbmc_gui.Dialog.return_value.select.return_value = -1
+
+        from resources.lib.routes.animelist import anime_list, year_select, season_select
+
+        mock_plugin = type('', (), {})
+        mock_plugin.args = {
+            "season": [filter_values.get("season")]
+        }
+        mock_plugin.handle = handle_val
+        mock_plugin.url_for = MagicMock()
+
+        self.mock_route_factory.get_router_instance.return_value = mock_plugin
+
+        year_select()
+
+        mock_plugin.url_for.assert_has_calls([
+            call(year_select, **filter_values),
+            call(season_select, **filter_values),
+            call(anime_list, **filter_values)
+        ])
+
+        self.mock_xbmc_gui.ListItem.assert_has_calls([
+            call("Year: " + filter_values.get("year")),
+            call("Season: " + filter_values.get("season")),
+            call("Search")
+        ])
+
+        self.mock_xbmc_plugin.endOfDirectory.assert_called_once_with(handle_val)
 
     # def test_successful_retrieval_page_one_none_page(self):
     #     handle_val = "Random"

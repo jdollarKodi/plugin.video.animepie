@@ -40,60 +40,86 @@ seasons = [
     "Fall"
 ]
 
-count = 0
-
-# This might not work. Sounds like we'll need to generate a url and pass the newly selected values in
-default_filter_values = {
-    "year": "2018",
-    "season": "Fall"
-}
-
-# filter_list_items = {
-#     "year": ListItem("Year: " + default_filter_values.get("year")),
-#     "season": ListItem("Seasons: " + default_filter_values.get("season"))
-# }
-
-# filter_menu_items = [
-#     {
-#         "filter_func": year_select,
-#         "label": "Year: %s"
-#     }
-# ]
-
 YEAR_ARG_KEY = "year"
+SEASON_ARG_KEY = "season"
+
+default_filter_values = {
+    YEAR_ARG_KEY: "2018",
+    SEASON_ARG_KEY: "Fall"
+}
 
 def generate_routes(plugin):
     plugin.add_route(filter_screen, "/filter")
     plugin.add_route(anime_list, "/anime-list")
-    plugin.add_route(genre_select, "/genre-select")
+    # plugin.add_route(genre_select, "/genre-select")
     plugin.add_route(year_select, "/anime-list/year-select")
+    plugin.add_route(season_select, "/anime-list/season-select")
 
     return plugin
 
 def _get_current_params(plugin):
     current_params = {}
 
-    if YEAR_ARG_KEY in plugin.args:
-        current_params[YEAR_ARG_KEY] = plugin.args[YEAR_ARG_KEY][0]
+    param_keys = [
+        YEAR_ARG_KEY,
+        SEASON_ARG_KEY
+    ]
 
+    for param_key in param_keys:
+        if param_key in plugin.args:
+            current_params[param_key] = plugin.args[param_key][0]
+        else:
+            current_params[param_key] = default_filter_values[param_key]
+    
     return current_params
 
-def genre_select():
+# def genre_select():
 # Genre List: https://api.animepie.to/Anime/Genres
 # data: [ 0: {id,name}]
-    logger.debug("Genre Select")
-    plugin = get_router_instance()
+    # logger.debug("Genre Select")
+    # plugin = get_router_instance()
     # filter_list_items["year"].setLabel("2")
     # args = { "year": "2000" }
-    args = {}
+    # args = {}
 
-    xbmc.executebuiltin("RunPlugin(" + plugin.url_for(filter_screen, **args) + ")")
+    # xbmc.executebuiltin("RunPlugin(" + plugin.url_for(filter_screen, **args) + ")")
     # plugin.args = { "year": ["2000"] }
     # plugin.redirect("/filter")
     # plugin.redirect(plugin.url_for(filter_screen, year="2000"))
 
+def _display_filter_menu_items(plugin, filter_values):
+    generate_text = lambda label, filter_map, key: label % (filter_map[key] if key in filter_map else '')
+
+    filter_menu_items = [
+        {
+            "filter_func": year_select,
+            "label": "Year: %s",
+            "key": YEAR_ARG_KEY
+        },
+        {
+            "filter_func": season_select,
+            "label": "Season: %s",
+            "key": SEASON_ARG_KEY
+        }
+    ]
+
+    for menu_item in filter_menu_items:
+        addDirectoryItem(
+            plugin.handle,
+            plugin.url_for(menu_item.get("filter_func"), **filter_values),
+            ListItem(generate_text(menu_item.get("label"), filter_values, menu_item.get("key"))),
+            True
+        )
+
+    addDirectoryItem(
+        plugin.handle,
+        plugin.url_for(anime_list, **filter_values),
+        ListItem("Search"),
+        True
+    )
+
 def year_select():
-    logger.debug("Year Select")
+    logger.debug("Year select")
     plugin = get_router_instance()
     args = _get_current_params(plugin)
 
@@ -105,30 +131,18 @@ def year_select():
     _display_filter_menu_items(plugin, args)
     endOfDirectory(plugin.handle)
 
-def _display_filter_menu_items(plugin, filter_values):
-    generate_text = lambda label, filter_map, key: label % (filter_map[key] if key in filter_map else '')
+def season_select():
+    logger.debug("Season select")
+    plugin = get_router_instance()
+    args = _get_current_params(plugin)
 
-    filter_menu_items = [
-        {
-            "filter_func": year_select,
-            "label": "Year: %s"
-        }
-    ]
+    res = Dialog().select("Choose a season", seasons)
 
-    for menu_item in filter_menu_items:
-        addDirectoryItem(
-            plugin.handle,
-            plugin.url_for(menu_item.get("filter_func")),
-            ListItem(generate_text(menu_item.get("label"), filter_values, YEAR_ARG_KEY)),
-            True
-        )
+    if res >= 0:
+        args[SEASON_ARG_KEY] = seasons[res]
 
-    addDirectoryItem(
-        plugin.handle,
-        None,
-        ListItem("Search"),
-        True
-    )
+    _display_filter_menu_items(plugin, args)
+    endOfDirectory(plugin.handle)
 
 def filter_screen():
     logger.debug("Inside filter screen")
