@@ -102,7 +102,7 @@ def year_select():
     if res >= 0:
         args[YEAR_ARG_KEY] = years[res]
 
-    display_filter_menu_items(plugin, args)
+    _display_filter_menu_items(plugin, args)
     endOfDirectory(plugin.handle)
 
 def _display_filter_menu_items(plugin, filter_values):

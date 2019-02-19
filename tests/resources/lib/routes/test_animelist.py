@@ -126,6 +126,60 @@ class TestAnimeList(unittest.TestCase):
         
         self.mock_xbmc_plugin.addDirectoryItem.assert_has_calls(expected_calls)
 
+    def test_year_select_calls_year_select_and_generates_menu_items(self):
+        handle_val = "Random"
+
+        self.mock_xbmc_gui.Dialog.return_value.select.return_value = 1
+
+        from resources.lib.routes.animelist import year_select
+
+        mock_route_list = {
+            year_select: 'year_select'
+        }
+
+        mock_plugin = type('', (), {})
+        mock_plugin.args = {}
+        mock_plugin.handle = handle_val
+        mock_plugin.url_for = staticmethod(lambda select: mock_route_list[select])
+
+        self.mock_route_factory.get_router_instance.return_value = mock_plugin
+
+        year_select()
+
+        self.mock_xbmc_gui.ListItem.assert_has_calls([
+            call("Year: 2018"),
+            call("Search")
+        ])
+
+        self.mock_xbmc_plugin.addDirectoryItem.assert_has_calls([
+            call(
+                handle_val,
+                mock_route_list[year_select],
+                ANY,
+                True
+            ),
+            call(
+                handle_val,
+                None,
+                ANY,
+                True
+            ),
+        ])
+
+
+# def year_select():
+#     logger.debug("Year Select")
+#     plugin = get_router_instance()
+#     args = _get_current_params(plugin)
+
+#     res = Dialog().select("Choose a year", years)
+
+#     if res >= 0:
+#         args[YEAR_ARG_KEY] = years[res]
+
+#     display_filter_menu_items(plugin, args)
+#     endOfDirectory(plugin.handle)
+
 # def _display_filter_menu_items(plugin, filter_values):
 #     generate_text = lambda label, filter_map, key: label % (filter_map[key] if key in filter_map else '')
 
