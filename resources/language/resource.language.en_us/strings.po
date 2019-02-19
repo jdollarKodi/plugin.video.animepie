@@ -31,3 +31,7 @@ msgstr ""
 msgctxt "#32003"
 msgid "Search"
 msgstr ""
+
+msgctxt "#32004"
+msgid "Episode %s"
+msgstr ""

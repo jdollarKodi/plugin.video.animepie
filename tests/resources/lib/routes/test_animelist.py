@@ -22,6 +22,7 @@ class TestAnimeList(unittest.TestCase):
             "requests": self.mock_requests,
             "xbmcplugin": self.mock_xbmc_plugin,
             "xbmcgui": self.mock_xbmc_gui,
+            "xbmcadddon": MagicMock(),
             "resources.lib.router_factory": self.mock_route_factory
         }
 
@@ -216,6 +217,10 @@ class TestAnimeList(unittest.TestCase):
         }
 
         self.common_filter_test(passed_filter_values, plugin_args, season_select)
+
+    def test_filter_screen_generates_filter_menu_items(self):
+        from resources.lib.routes.animelist import filter_screen
+        self.common_filter_test({}, {}, filter_screen)
 
     def test_successful_retrieval_page_one_none_page(self):
         handle_val = "Random"

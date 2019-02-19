@@ -8,6 +8,7 @@ from xbmcplugin import addDirectoryItem, endOfDirectory, setResolvedUrl
 
 from resources.lib.router_factory import get_router_instance
 from resources.lib.constants.url import BASE_URL, LIST_PATH
+from resources.lib.routes.episodelist import episode_list
 
 ADDON = xbmcaddon.Addon()
 logger = logging.getLogger(ADDON.getAddonInfo('id'))
@@ -189,13 +190,12 @@ def anime_list():
 
         addDirectoryItem(
             plugin.handle,
-            None,
-            # plugin.url_for(
-            #     None,
-            #     id=anime["animeID"],
-            #     listId=anime["animeListID"],
-            #     episode_count=anime["animeEpisode"]
-            # ),
+            plugin.url_for(
+                episode_list,
+                id=anime["animeID"],
+                listId=anime["animeListID"],
+                episode_count=anime["animeEpisode"]
+            ),
             li,
             True
         )

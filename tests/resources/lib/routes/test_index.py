@@ -1,6 +1,6 @@
 import sys
 import unittest
-from mock import call, patch, MagicMock, Mock
+from mock import call, patch, MagicMock, Mock, ANY
 
 class TestIndex(unittest.TestCase):
   def setUp(self):
@@ -12,10 +12,11 @@ class TestIndex(unittest.TestCase):
       mock_xbmc_plugin.addDirectoryItem = MagicMock()
       self.mock_xbmc_plugin = mock_xbmc_plugin
 
-      mock_xbmc_addon = MagicMock()
       mock_xbmc_addon_inst = MagicMock()
       mock_xbmc_addon_inst.getLocalizedString = MagicMock()
-      mock_xbmc_addon.Addon = MagicMock(return_value=mock_xbmc_addon_inst)
+      mock_xbmc_addon_inst.getAddonInfo.return_value = "test"
+      mock_xbmc_addon = MagicMock()
+      mock_xbmc_addon.Addon.return_value = mock_xbmc_addon_inst
       self.mock_xbmc_addon = mock_xbmc_addon
       self.mock_xbmc_addon_inst = mock_xbmc_addon_inst
 
@@ -36,7 +37,8 @@ class TestIndex(unittest.TestCase):
 
     mock_plugin = type('', (), {})
     mock_plugin.handle = handle_val
-    mock_plugin.url_for_path = staticmethod(lambda url: url)
+    mock_plugin.url_for = MagicMock()
+    mock_plugin.url_for_path = MagicMock()
 
     mock_route_factory = MagicMock()
     mock_route_factory.get_router_instance = mock_plugin
@@ -49,14 +51,14 @@ class TestIndex(unittest.TestCase):
     calls_to_addDirectoryItem = [
         call(
             handle_val,
-            "/anime-list",
-            self.mock_xbmc_gui.ListItem(),
+            ANY,
+            ANY,
             True
         ),
         call(
             handle_val,
-            "/search",
-            self.mock_xbmc_gui.ListItem(),
+            ANY,
+            ANY,
             True
         )
     ]
