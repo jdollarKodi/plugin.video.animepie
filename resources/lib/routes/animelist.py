@@ -42,6 +42,7 @@ seasons = [
 
 YEAR_ARG_KEY = "year"
 SEASON_ARG_KEY = "season"
+PAGE_ARG_KEY = "page"
 
 default_filter_values = {
     YEAR_ARG_KEY: "2018",
@@ -60,16 +61,24 @@ def generate_routes(plugin):
 def _get_current_params(plugin):
     current_params = {}
 
-    param_keys = [
+    param_keys_with_defaults = [
         YEAR_ARG_KEY,
         SEASON_ARG_KEY
     ]
 
-    for param_key in param_keys:
+    for param_key in param_keys_with_defaults:
         if param_key in plugin.args:
             current_params[param_key] = plugin.args[param_key][0]
         else:
             current_params[param_key] = default_filter_values[param_key]
+
+    param_keys_without_defaults = [
+        PAGE_ARG_KEY
+    ]
+
+    for param_key in param_keys_without_defaults:
+        if param_key in plugin.args:
+            current_params[param_key] = plugin.args[param_key][0]
     
     return current_params
 
@@ -148,60 +157,61 @@ def filter_screen():
     logger.debug("Inside filter screen")
     plugin = get_router_instance()
 
-    display_filter_menu_items(plugin, _get_current_params(plugin))
+    _display_filter_menu_items(plugin, _get_current_params(plugin))
 
     endOfDirectory(plugin.handle)
 
 
 def anime_list():
     plugin = get_router_instance()
-    filter_screen(plugin)
-    page = plugin.args["page"][0] if "page" in plugin.args else None
-    # page = selected_page if selected_page else "1" 
 
-    # logger.debug("Page: " + page)
+    params = {
+        "page": "1",
+        "limit": "15",
+        "year": "2018",
+        "season": "Summer",
+        "genres": "",
+        "sort": "1",
+        "sort2": "",
+        "website": ""
+    }
+    params.update(_get_current_params(plugin))
 
-    # params = {
-    #     "page": page,
-    #     "limit": "15",
-    #     "year": "2018",
-    #     "season": "Summer",
-    #     "genres": "",
-    #     "sort": "1",
-    #     "sort2": "",
-    #     "website": ""
-    # }
+    res = requests.get(BASE_URL + LIST_PATH, params=params)
+    json_data = res.json()
+    for anime in json_data["data"]["list"]:
+        image = anime['backgroundSrc'] if anime['backgroundSrc'] else None
+        info = anime['animeSynopsis'] if anime['animeSynopsis'] else ''
 
-    # res = requests.get(BASE_URL + LIST_PATH, params=params)
-    # json_data = res.json()
-    # for anime in json_data["data"]["list"]:
-    #     image = anime['backgroundSrc'] if anime['backgroundSrc'] else None
-    #     info = anime['animeSynopsis'] if anime['animeSynopsis'] else ''
+        li = ListItem(anime["animeName"])
+        li.setArt({'icon': image })
+        li.setInfo(type='video', infoLabels={'plot': info})
 
-    #     li = ListItem(anime["animeName"])
-    #     li.setArt({'icon': image })
-    #     li.setInfo(type='video', infoLabels={'plot': info})
+        addDirectoryItem(
+            plugin.handle,
+            None,
+            # plugin.url_for(
+            #     None,
+            #     id=anime["animeID"],
+            #     listId=anime["animeListID"],
+            #     episode_count=anime["animeEpisode"]
+            # ),
+            li,
+            True
+        )
 
-    #     addDirectoryItem(
-    #         plugin.handle,
-    #         plugin.url_for(
-    #             episode_list_func,
-    #             id=anime["animeID"],
-    #             listId=anime["animeListID"],
-    #             episode_count=anime["animeEpisode"]
-    #         ), li,
-    #         True
-    #     )
+    are_pages_remaining = math.ceil(float(json_data["data"]["count"]) / float(params["limit"])) > int(params.get("page"))
+    if (are_pages_remaining):
+        next_page_params = params
+        next_page_params.update({ "page": str(int(params.get("page")) + 1) })
 
-    # are_pages_remaining = math.ceil(float(json_data["data"]["count"]) / float(params["limit"])) > int(page)
-    # if (are_pages_remaining):
-    #     addDirectoryItem(
-    #         plugin.handle, 
-    #         plugin.url_for(
-    #             original_caller, page=int(page) + 1
-    #         ),
-    #         ListItem('Next Page'),
-    #         True
-    #     )
+        addDirectoryItem(
+            plugin.handle, 
+            plugin.url_for(
+                anime_list, **next_page_params
+            ),
+            ListItem('Next Page'),
+            True
+        )
 
-    # endOfDirectory(plugin.handle)
+    endOfDirectory(plugin.handle)

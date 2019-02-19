@@ -36,18 +36,21 @@ class TestAnimeList(unittest.TestCase):
 
         expected_year = "2000"
         expected_season = "Winter"
+        expected_page = "Page"
 
         mock_plugin = type('', (), {})
         mock_plugin.args = {
             "year": [expected_year],
-            "season": [expected_season]
+            "season": [expected_season],
+            "page": [expected_page],
         }
 
         args = _get_current_params(mock_plugin)
 
         self.assertDictEqual(args, {
             "year": expected_year,
-            "season": expected_season
+            "season": expected_season,
+            "page": expected_page
         }, "Returned parameter list does not match plugin.arg values")
 
     def test_get_current_params_returns_default_values_if_none(self):
@@ -128,61 +131,25 @@ class TestAnimeList(unittest.TestCase):
             map(lambda x: call(handle_val, ANY, ANY, True), range(0, 3))
         )
 
-    def test_year_select_calls_year_select_dialog_and_generates_menu_items(self):
+    def common_filter_test(self, updated_filters, plugin_args, methodToTest):
         handle_val = "Random"
-        default_filter = {
-            "year": "2018",
-            "season": "Fall",
-        }
-
-        self.mock_xbmc_gui.Dialog.return_value.select.return_value = 1
-
-        from resources.lib.routes.animelist import anime_list, year_select, season_select
-
-        mock_plugin = type('', (), {})
-        mock_plugin.args = {}
-        mock_plugin.handle = handle_val
-        mock_plugin.url_for = MagicMock()
-
-        self.mock_route_factory.get_router_instance.return_value = mock_plugin
-
-        year_select()
-
-        self.mock_xbmc_gui.ListItem.assert_has_calls([
-            call("Year: " + default_filter.get("year")),
-            call("Season: " + default_filter.get("season")),
-            call("Search")
-        ])
-
-        mock_plugin.url_for.assert_has_calls([
-            call(year_select, **default_filter),
-            call(season_select, **default_filter),
-            call(anime_list, **default_filter)
-        ])
-
-        self.mock_xbmc_plugin.endOfDirectory.assert_called_once_with(handle_val)
-
-    def test_year_select_calls_generates_menu_items_based_on_args_if_nothing_selected(self):
-        handle_val = "Random"
+        
         filter_values = {
-            "year": "2009",
+            "year": "2018",
             "season": "Fall"
         }
-
-        self.mock_xbmc_gui.Dialog.return_value.select.return_value = -1
+        filter_values.update(updated_filters)
 
         from resources.lib.routes.animelist import anime_list, year_select, season_select
 
         mock_plugin = type('', (), {})
-        mock_plugin.args = {
-            "year": [filter_values.get("year")]
-        }
+        mock_plugin.args = plugin_args
         mock_plugin.handle = handle_val
         mock_plugin.url_for = MagicMock()
 
         self.mock_route_factory.get_router_instance.return_value = mock_plugin
 
-        year_select()
+        methodToTest()
 
         mock_plugin.url_for.assert_has_calls([
             call(year_select, **filter_values),
@@ -197,248 +164,264 @@ class TestAnimeList(unittest.TestCase):
         ])
 
         self.mock_xbmc_plugin.endOfDirectory.assert_called_once_with(handle_val)
+
+    def test_year_select_calls_year_select_dialog_and_generates_menu_items(self):
+        from resources.lib.routes.animelist import year_select
+
+        passed_filter_values = {
+            "year": "2017"
+        }
+
+        self.mock_xbmc_gui.Dialog.return_value.select.return_value = 2
+
+        self.common_filter_test(passed_filter_values, {}, year_select)
+
+    def test_year_select_calls_generates_menu_items_based_on_args_if_nothing_selected(self):
+        from resources.lib.routes.animelist import year_select
+
+        passed_filter_values = {
+            "year": "2009"
+        }
+
+        self.mock_xbmc_gui.Dialog.return_value.select.return_value = -1
+
+        plugin_args = {
+            "year": [passed_filter_values.get("year")]
+        }
+
+        self.common_filter_test(passed_filter_values, plugin_args, year_select)
+    
+    def test_season_select_calls_season_select_dialog_and_generates_menu_items(self):
+        from resources.lib.routes.animelist import season_select
+
+        filter_values = {
+            "season": "Spring"
+        }
+
+        self.mock_xbmc_gui.Dialog.return_value.select.return_value = 1
+
+        self.common_filter_test(filter_values, {}, season_select)
     
     def test_season_select_calls_season_select_dialog_and_generates_menu_items_with_passed_in_if_none_selected(self):
-        handle_val = "Random"
-        filter_values = {
-            "year": "2018",
+        from resources.lib.routes.animelist import season_select
+
+        passed_filter_values = {
             "season": "Winter"
         }
 
         self.mock_xbmc_gui.Dialog.return_value.select.return_value = -1
 
-        from resources.lib.routes.animelist import anime_list, year_select, season_select
+        plugin_args = {
+            "season": [passed_filter_values.get("season")]
+        }
+
+        self.common_filter_test(passed_filter_values, plugin_args, season_select)
+
+    def test_successful_retrieval_page_one_none_page(self):
+        handle_val = "Random"
+        mock_url = "Random-url"
+
+        mock_plugin = type('', (), {})
+        mock_plugin.args = {}
+        mock_plugin.handle = handle_val
+        mock_plugin.url_for = Mock(return_value=mock_url)
+
+        mock_route_factory = MagicMock()
+        mock_route_factory.get_router_instance = mock_plugin
+        sys.modules['resources.lib.router_factory'] = mock_route_factory
+
+        fixture_path = self.dir_path + "/fixtures/animeList/list_success.json"
+
+        with open(fixture_path, "r") as fixture:
+            mock_response = fixture.read()
+
+        res_mock = MagicMock()
+        res_mock.json = Mock(return_value=json.loads(mock_response))
+        self.mock_requests.get = Mock(return_value=res_mock)
+
+        from resources.lib.routes.animelist import anime_list
+        anime_list()
+
+        expected_list_item_calls = [
+            call('Gintama.: Shirogane no Tamashii-hen 2'),
+            call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
+            call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
+            call('Gintama.: Silver Soul Arc - Second Half War'),
+            call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
+            call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
+            call('Gintama.: Shirogane no Tamashii-hen - Kouhan-sen'),
+            call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
+            call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
+            call('Next Page')
+        ]
+
+        # self.mock_xbmc_gui.ListItem.assert_has_calls(expected_list_item_calls)
+
+        # Need to check for order of list items added
+        expected_calls = [
+            call(
+                handle_val,
+                mock_url,
+                ANY,
+                True
+            ),
+            call(
+                handle_val,
+                mock_url,
+                ANY,
+                True
+            ),
+            call(
+                handle_val,
+                mock_url,
+                ANY,
+                True
+            ),
+            call(
+                handle_val,
+                mock_url,
+                ANY,
+                True
+            ),
+        ]
+        
+        self.mock_xbmc_plugin.addDirectoryItem.assert_has_calls(expected_calls)
+
+    def test_successful_retrieval_page_one_with_selected(self):
+        handle_val = "Random"
+        mock_url = "Random-url"
 
         mock_plugin = type('', (), {})
         mock_plugin.args = {
-            "season": [filter_values.get("season")]
+            "page": "1"
         }
         mock_plugin.handle = handle_val
-        mock_plugin.url_for = MagicMock()
+        mock_plugin.url_for = Mock(return_value=mock_url)
 
-        self.mock_route_factory.get_router_instance.return_value = mock_plugin
+        mock_route_factory = MagicMock()
+        mock_route_factory.get_router_instance = mock_plugin
+        sys.modules['resources.lib.router_factory'] = mock_route_factory
 
-        year_select()
+        fixture_path = self.dir_path + "/fixtures/animeList/list_success.json"
 
-        mock_plugin.url_for.assert_has_calls([
-            call(year_select, **filter_values),
-            call(season_select, **filter_values),
-            call(anime_list, **filter_values)
-        ])
+        with open(fixture_path, "r") as fixture:
+            mock_response = fixture.read()
 
-        self.mock_xbmc_gui.ListItem.assert_has_calls([
-            call("Year: " + filter_values.get("year")),
-            call("Season: " + filter_values.get("season")),
-            call("Search")
-        ])
+        res_mock = MagicMock()
+        res_mock.json = Mock(return_value=json.loads(mock_response))
+        self.mock_requests.get = Mock(return_value=res_mock)
 
-        self.mock_xbmc_plugin.endOfDirectory.assert_called_once_with(handle_val)
+        from resources.lib.routes.animelist import anime_list
+        anime_list()
 
-    # def test_successful_retrieval_page_one_none_page(self):
-    #     handle_val = "Random"
-    #     mock_url = "Random-url"
+        expected_list_item_calls = [
+            call('Gintama.: Shirogane no Tamashii-hen 2'),
+            call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
+            call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
+            call('Gintama.: Silver Soul Arc - Second Half War'),
+            call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
+            call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
+            call('Gintama.: Shirogane no Tamashii-hen - Kouhan-sen'),
+            call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
+            call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
+            call('Next Page')
+        ]
 
-    #     mock_plugin = type('', (), {})
-    #     mock_plugin.args = {}
-    #     mock_plugin.handle = handle_val
-    #     mock_plugin.url_for = Mock(return_value=mock_url)
+        self.mock_xbmc_gui.ListItem.assert_has_calls(expected_list_item_calls)
 
-    #     mock_route_factory = MagicMock()
-    #     mock_route_factory.get_router_instance = mock_plugin
-    #     sys.modules['resources.lib.router_factory'] = mock_route_factory
-
-    #     fixture_path = self.dir_path + "/fixtures/animeList/list_success.json"
-
-    #     with open(fixture_path, "r") as fixture:
-    #         mock_response = fixture.read()
-
-    #     res_mock = MagicMock()
-    #     res_mock.json = Mock(return_value=json.loads(mock_response))
-    #     self.mock_requests.get = Mock(return_value=res_mock)
-
-    #     from resources.lib.routes.animelist import anime_list
-    #     anime_list()
-
-    #     expected_list_item_calls = [
-    #         call('Gintama.: Shirogane no Tamashii-hen 2'),
-    #         call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
-    #         call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
-    #         call('Gintama.: Silver Soul Arc - Second Half War'),
-    #         call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
-    #         call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
-    #         call('Gintama.: Shirogane no Tamashii-hen - Kouhan-sen'),
-    #         call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
-    #         call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
-    #         call('Next Page')
-    #     ]
-
-    #     # self.mock_xbmc_gui.ListItem.assert_has_calls(expected_list_item_calls)
-
-    #     # Need to check for order of list items added
-    #     expected_calls = [
-    #         call(
-    #             handle_val,
-    #             mock_url,
-    #             ANY,
-    #             True
-    #         ),
-    #         call(
-    #             handle_val,
-    #             mock_url,
-    #             ANY,
-    #             True
-    #         ),
-    #         call(
-    #             handle_val,
-    #             mock_url,
-    #             ANY,
-    #             True
-    #         ),
-    #         call(
-    #             handle_val,
-    #             mock_url,
-    #             ANY,
-    #             True
-    #         ),
-    #     ]
+        # Need to check for order of list items added
+        expected_calls = [
+            call(
+                handle_val,
+                mock_url,
+                ANY,
+                True
+            ),
+            call(
+                handle_val,
+                mock_url,
+                ANY,
+                True
+            ),
+            call(
+                handle_val,
+                mock_url,
+                ANY,
+                True
+            ),
+            call(
+                handle_val,
+                mock_url,
+                ANY,
+                True
+            ),
+        ]
         
-    #     self.mock_xbmc_plugin.addDirectoryItem.assert_has_calls(expected_calls)
+        self.mock_xbmc_plugin.addDirectoryItem.assert_has_calls(expected_calls)
 
-    # def test_successful_retrieval_page_one_with_selected(self):
-    #     handle_val = "Random"
-    #     mock_url = "Random-url"
+    def test_successful_retrieval_no_next_on_last_page(self):
+        handle_val = "Random"
+        mock_url = "Random-url"
 
-    #     mock_plugin = type('', (), {})
-    #     mock_plugin.args = {
-    #         "page": "1"
-    #     }
-    #     mock_plugin.handle = handle_val
-    #     mock_plugin.url_for = Mock(return_value=mock_url)
+        mock_plugin = type('', (), {})
+        mock_plugin.args = {
+            "page": "8"
+        }
+        mock_plugin.handle = handle_val
+        mock_plugin.url_for = Mock(return_value=mock_url)
 
-    #     mock_route_factory = MagicMock()
-    #     mock_route_factory.get_router_instance = mock_plugin
-    #     sys.modules['resources.lib.router_factory'] = mock_route_factory
+        mock_route_factory = MagicMock()
+        mock_route_factory.get_router_instance = mock_plugin
+        sys.modules['resources.lib.router_factory'] = mock_route_factory
 
-    #     fixture_path = self.dir_path + "/fixtures/animeList/list_success.json"
+        fixture_path = self.dir_path + "/fixtures/animeList/list_success.json"
 
-    #     with open(fixture_path, "r") as fixture:
-    #         mock_response = fixture.read()
+        with open(fixture_path, "r") as fixture:
+            mock_response = fixture.read()
 
-    #     res_mock = MagicMock()
-    #     res_mock.json = Mock(return_value=json.loads(mock_response))
-    #     self.mock_requests.get = Mock(return_value=res_mock)
+        res_mock = MagicMock()
+        res_mock.json = Mock(return_value=json.loads(mock_response))
+        self.mock_requests.get = Mock(return_value=res_mock)
 
-    #     from resources.lib.routes.animelist import anime_list
-    #     anime_list()
+        from resources.lib.routes.animelist import anime_list
+        anime_list()
 
-    #     expected_list_item_calls = [
-    #         call('Gintama.: Shirogane no Tamashii-hen 2'),
-    #         call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
-    #         call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
-    #         call('Gintama.: Silver Soul Arc - Second Half War'),
-    #         call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
-    #         call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
-    #         call('Gintama.: Shirogane no Tamashii-hen - Kouhan-sen'),
-    #         call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
-    #         call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
-    #         call('Next Page')
-    #     ]
+        expected_list_item_calls = [
+            call('Gintama.: Shirogane no Tamashii-hen 2'),
+            call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
+            call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
+            call('Gintama.: Silver Soul Arc - Second Half War'),
+            call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
+            call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
+            call('Gintama.: Shirogane no Tamashii-hen - Kouhan-sen'),
+            call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
+            call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
+        ]
 
-    #     self.mock_xbmc_gui.ListItem.assert_has_calls(expected_list_item_calls)
+        self.assertEquals(self.mock_xbmc_gui.ListItem.call_count, 3)
+        self.mock_xbmc_gui.ListItem.assert_has_calls(expected_list_item_calls)
 
-    #     # Need to check for order of list items added
-    #     expected_calls = [
-    #         call(
-    #             handle_val,
-    #             mock_url,
-    #             ANY,
-    #             True
-    #         ),
-    #         call(
-    #             handle_val,
-    #             mock_url,
-    #             ANY,
-    #             True
-    #         ),
-    #         call(
-    #             handle_val,
-    #             mock_url,
-    #             ANY,
-    #             True
-    #         ),
-    #         call(
-    #             handle_val,
-    #             mock_url,
-    #             ANY,
-    #             True
-    #         ),
-    #     ]
+        # Need to check for order of list items added
+        expected_calls = [
+            call(
+                handle_val,
+                mock_url,
+                ANY,
+                True
+            ),
+            call(
+                handle_val,
+                mock_url,
+                ANY,
+                True
+            ),
+            call(
+                handle_val,
+                mock_url,
+                ANY,
+                True
+            ),
+        ]
         
-    #     self.mock_xbmc_plugin.addDirectoryItem.assert_has_calls(expected_calls)
-
-    # def test_successful_retrieval_no_next_on_last_page(self):
-    #     handle_val = "Random"
-    #     mock_url = "Random-url"
-
-    #     mock_plugin = type('', (), {})
-    #     mock_plugin.args = {
-    #         "page": "8"
-    #     }
-    #     mock_plugin.handle = handle_val
-    #     mock_plugin.url_for = Mock(return_value=mock_url)
-
-    #     mock_route_factory = MagicMock()
-    #     mock_route_factory.get_router_instance = mock_plugin
-    #     sys.modules['resources.lib.router_factory'] = mock_route_factory
-
-    #     fixture_path = self.dir_path + "/fixtures/animeList/list_success.json"
-
-    #     with open(fixture_path, "r") as fixture:
-    #         mock_response = fixture.read()
-
-    #     res_mock = MagicMock()
-    #     res_mock.json = Mock(return_value=json.loads(mock_response))
-    #     self.mock_requests.get = Mock(return_value=res_mock)
-
-    #     from resources.lib.routes.animelist import anime_list
-    #     anime_list()
-
-    #     expected_list_item_calls = [
-    #         call('Gintama.: Shirogane no Tamashii-hen 2'),
-    #         call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
-    #         call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
-    #         call('Gintama.: Silver Soul Arc - Second Half War'),
-    #         call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
-    #         call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
-    #         call('Gintama.: Shirogane no Tamashii-hen - Kouhan-sen'),
-    #         call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
-    #         call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
-    #     ]
-
-    #     self.assertEquals(self.mock_xbmc_gui.ListItem.call_count, 3)
-    #     self.mock_xbmc_gui.ListItem.assert_has_calls(expected_list_item_calls)
-
-    #     # Need to check for order of list items added
-    #     expected_calls = [
-    #         call(
-    #             handle_val,
-    #             mock_url,
-    #             ANY,
-    #             True
-    #         ),
-    #         call(
-    #             handle_val,
-    #             mock_url,
-    #             ANY,
-    #             True
-    #         ),
-    #         call(
-    #             handle_val,
-    #             mock_url,
-    #             ANY,
-    #             True
-    #         ),
-    #     ]
-        
-    #     self.assertEquals(self.mock_xbmc_plugin.addDirectoryItem.call_count, 3)
-    #     self.mock_xbmc_plugin.addDirectoryItem.assert_has_calls(expected_calls)
+        self.assertEquals(self.mock_xbmc_plugin.addDirectoryItem.call_count, 3)
+        self.mock_xbmc_plugin.addDirectoryItem.assert_has_calls(expected_calls)
