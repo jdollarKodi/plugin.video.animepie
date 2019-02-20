@@ -123,7 +123,7 @@ class TestPlaySource(unittest.TestCase):
             "source_url": [source_url],
         }
 
-        self.embed_processors.mp4upload.retrieve_source_url.side_effect = AnimePieException(expected_error)
+        self.embed_processors.mp4upload.retrieve_source_url.return_value = (AnimePieException(expected_error), None)
         from resources.lib.routes.playsource import play_source
 
         play_source()
