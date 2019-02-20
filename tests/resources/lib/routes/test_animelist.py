@@ -33,6 +33,20 @@ class TestAnimeList(unittest.TestCase):
     def tearDown(self):
         self.module_patcher.stop()
 
+    def test_generate_routes(self):
+        from resources.lib.routes.animelist import generate_routes, filter_screen, anime_list, year_select, season_select
+
+        mock_plugin = MagicMock()
+
+        generate_routes(mock_plugin)
+
+        mock_plugin.add_route.assert_has_calls([
+            call(filter_screen, '/filter'),
+            call(anime_list, '/anime-list'),
+            call(year_select, '/anime-list/year-select'),
+            call(season_select, '/anime-list/season-select'),
+        ])
+
     def test_get_current_params_returns_values_if_passed_in(self):
         from resources.lib.routes.animelist import _get_current_params
 
