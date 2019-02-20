@@ -1,4 +1,5 @@
 import unittest
+from resources.lib.animepie_exception import AnimePieException
 from mock import call, patch, MagicMock, ANY
 
 class TestPlaySource(unittest.TestCase):
@@ -113,10 +114,68 @@ class TestPlaySource(unittest.TestCase):
             self.reset_mocks()
             mock_player.reset_mock()
 
-    # def test_playsource_custom_processor_error(self):
+    def test_playsource_custom_processor_error(self):
+        source_url = "http://fake.com"
+        expected_error = "Test Error"
 
-    # def test_playsource_resolveurl_success(self):
+        self.mock_plugin.args = {
+            "website_name": ["TEST.MP4UPLOAD"],
+            "source_url": [source_url],
+        }
 
-    # def test_playsource_resolveurl_no_url(self):
+        self.embed_processors.mp4upload.retrieve_source_url.side_effect = AnimePieException(expected_error)
+        from resources.lib.routes.playsource import play_source
 
-    # def test_playsource_resolveurl_exception(self):
+        play_source()
+
+        self.mock_requests.get.assert_called_once_with(source_url)
+        self.mock_bs4.BeautifulSoup.assert_called_once_with(ANY, 'html.parser')
+        self.embed_processors.mp4upload.retrieve_source_url.assert_called_once()
+        self.mock_xbmc.executebuiltin.assert_called_once_with("Notification(Error," + expected_error + ")")
+
+    def test_playsource_resolveurl_success(self):
+        source_url = "http://fake.com"
+        expected_source_url = "http://processed.com"
+
+        self.mock_plugin.args = {
+            "website_name": ["SOME.OTHERSITE"],
+            "source_url": [source_url],
+        }
+
+        mock_player = MagicMock()
+        self.mock_xbmc.Player.return_value = mock_player
+
+        self.mock_resolve_url.resolve.return_value = expected_source_url
+
+        from resources.lib.routes.playsource import play_source
+
+        play_source()
+
+        self.mock_requests.get.assert_not_called()
+        self.mock_bs4.BeautifulSoup.assert_not_called()
+        self.mock_xbmc_gui.ListItem.assert_called_once_with(path=expected_source_url)
+        mock_player.play.assert_called_once_with(expected_source_url, ANY)
+
+    def test_playsource_resolveurl_no_url(self):
+        source_url = "http://fake.com"
+        expected_error = 'Test Error'
+
+        self.mock_plugin.args = {
+            "website_name": ["SOME.OTHERSITE"],
+            "source_url": [source_url],
+        }
+
+        mock_player = MagicMock()
+        self.mock_xbmc.Player.return_value = mock_player
+
+        self.mock_resolve_url.resolve.return_value = None
+        self.mock_addon_inst.getLocalizedString.return_value = expected_error
+
+        from resources.lib.routes.playsource import play_source
+
+        play_source()
+
+        self.mock_requests.get.assert_not_called()
+        self.mock_bs4.BeautifulSoup.assert_not_called()
+        self.mock_addon_inst.getLocalizedString.assert_called_once_with(32001)
+        self.mock_xbmc.executebuiltin.assert_called_once_with("Notification(Error," + expected_error + ")")
