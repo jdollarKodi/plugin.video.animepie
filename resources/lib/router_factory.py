@@ -9,12 +9,3 @@ def get_router_instance():
         this.instance = routing.Plugin()
 
     return this.instance
-# class RouterFactory:
-#   instance = None
-
-#   @staticmethod
-#   def getInstance():
-#       if not RouterFactory.instance:
-#           RouterFactory.instance = routing.Plugin()
-
-#       return RouterFactory.instance
