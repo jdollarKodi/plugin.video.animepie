@@ -18,7 +18,6 @@ class TestEpisodeList(unittest.TestCase):
             "xbmcplugin": self.mock_xbmc_plugin,
             "xbmcgui": self.mock_xbmc_gui,
             "xbmcaddon": self.mock_xbmc_addon,
-            "resolveurl": MagicMock(),
             "resources.lib.router_factory": self.mock_route_factory,
             "resources.lib.routes.videosources": self.mock_video_source
         }
