@@ -33,6 +33,18 @@ class TestIndex(unittest.TestCase):
   def tearDown(self):
     self.module_patcher.stop()
 
+  def test_route_generation(self):
+    mock_plugin = MagicMock()
+
+    sys.modules['resources.lib.router_factory'] = MagicMock()
+    from resources.lib.routes.index import generate_routes, index
+
+    generate_routes(mock_plugin)
+
+    mock_plugin.add_route.assert_has_calls([
+      call(index, "/")
+    ])
+
   def test_directory_generation(self):
     handle_val = "Random"
 
@@ -68,5 +80,6 @@ class TestIndex(unittest.TestCase):
       call(32002),
       call(32003)
     ])
+
     self.mock_xbmc_plugin.addDirectoryItem.assert_has_calls(calls_to_addDirectoryItem)
     self.mock_xbmc_plugin.endOfDirectory.assert_called_once_with(handle_val)
