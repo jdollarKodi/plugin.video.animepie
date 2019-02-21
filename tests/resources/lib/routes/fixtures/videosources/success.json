@@ -1,0 +1,45 @@
+{
+  "result": "ok",
+  "msg": "Get one anime detail success",
+  "data": {
+    "animeID": 25807,
+    "animeListID": 28690,
+    "animeName": "Gintama.: Shirogane no Tamashii-hen 2",
+    "animeEpisode": 14,
+    "animeWebSiteSrc": [
+      {
+        "website": "9A.OpenLoad",
+        "srclist": [
+          {
+            "src": "https://openload.co/embed/0Src-Ynealo/",
+            "website": "9A.OpenLoad",
+            "src_type": 0
+          }
+        ]
+      },
+      {
+        "website": "9A.Streamango",
+        "srclist": [
+          {
+            "src": "https://streamango.com/embed/nsaddnqafrlcqsea/",
+            "website": "9A.Streamango",
+            "src_type": 0
+          }
+        ]
+      },
+      {
+        "website": "GGA.Vidstreaming",
+        "srclist": [
+          {
+            "src": "https://vidstreaming.io/streaming.php?id=MTA2NzA4&title=Gintama.%3A+Shirogane+no+Tamashii-hen+2+Episode+3",
+            "website": "GGA.Vidstreaming",
+            "src_type": 0
+          }
+        ]
+      }
+    ],
+    "animeGenres": "Action, Comedy, Historical, Parody, Samurai, Sci-Fi, Shounen",
+    "animeDiscussion": null,
+    "server": null
+  }
+}
