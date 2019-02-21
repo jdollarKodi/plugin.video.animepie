@@ -29,11 +29,11 @@ def play_source():
 
     embedded_processors = {
         "MP4UPLOAD": mp4upload,
-        "Streamango": streamango,
+        "STREAMANGO": streamango,
     }
 
     decrypted_source = None
-    processor = embedded_processors.get(website_name.split(".")[1], None)
+    processor = embedded_processors.get(website_name.split(".")[1].upper(), None)
 
     try:
         if processor:
