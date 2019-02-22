@@ -1,5 +1,6 @@
 import requests
 import logging
+import math
 import xbmcaddon
 from xbmcgui import ListItem
 from xbmcplugin import addDirectoryItem, endOfDirectory
@@ -43,6 +44,20 @@ def anime_search():
                 episode_count=str(anime["animeEpisode"])
             ),
             li,
+            True
+        )
+
+    are_pages_remaining = math.ceil(float(json_data["data"]["count"]) / float(params.get("limit"))) > int(page)
+    if (are_pages_remaining):
+        next_page_params = { "page": page, "search": search_value }
+        next_page_params.update({ "page": str(int(params.get("page")) + 1) })
+
+        addDirectoryItem(
+            plugin.handle, 
+            plugin.url_for(
+                anime_search, **next_page_params
+            ),
+            ListItem('Next Page'),
             True
         )
 

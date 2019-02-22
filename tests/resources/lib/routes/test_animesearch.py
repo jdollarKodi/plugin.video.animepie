@@ -58,7 +58,7 @@ class TestAnimeSearch(unittest.TestCase):
             call(self.mock_episode_list.episode_list, id="10202", listId="8578", episode_count="1"),
             call(self.mock_episode_list.episode_list, id="10292", listId="8801", episode_count="13"),
             call(self.mock_episode_list.episode_list, id="13075", listId="8802", episode_count="13")
-        ])
+        ] + next_page_info.get("url_for"))
 
         self.mock_xbmc_gui.ListItem.assert_has_calls([
             call("Akuma no Riddle: Shousha wa Dare? Nukiuchi Test"),
@@ -70,13 +70,13 @@ class TestAnimeSearch(unittest.TestCase):
             call("Baka to Test to Shoukanjuu (Dub)"),
             call().setArt({"icon": "https://myanimelist.cdn-dena.com/images/anime/3/50389.jpg"}),
             call().setInfo(type="video", infoLabels={"plot": "The story centers around Akihisa Yoshii, the \"baka\" of the title. His academy rigidly divides up the student body into classes based on the results of tests. The prodigies are in the A class with reclining seats complete with air conditioning, but Akihisa is in F class, the lowest rung of the school ladder which is furnished only with low, decrepit tables and worn-out straw tatami mats. A girl named Mizuki Himeji is actually one of the smartest girls in Akihisa's sophomore year, but she had a fever on test day and was pigeonholed into the F class. Besides Mizuki (who Akihisa secretly adores), the F class also has Yuuji Sakamoto, the class president who has been Akihisa's friend and partner-in-crime since the freshman year.\r\n\r\nThe school happens to have developed experiments to summon fantasy creatures, and Akihisa decides to rally F class to take on the higher-tiered classes and seize their perks. The F class uses the summoned creatures in an all-out battle for school supremacy."})
-        ])
+        ] + next_page_info.get("list_item"))
 
         self.mock_xbmc_plugin.addDirectoryItem.assert_has_calls([
             call(mock_plugin.handle, ANY, ANY, True),
             call(mock_plugin.handle, ANY, ANY, True),
             call(mock_plugin.handle, ANY, ANY, True),
-        ])
+        ] + next_page_info.get("directory_item"))
 
         self.mock_xbmc_plugin.endOfDirectory.assert_called_once_with(mock_plugin.handle)
 
@@ -113,7 +113,7 @@ class TestAnimeSearch(unittest.TestCase):
         }
 
         self.mock_requests.get.assert_called_once_with(BASE_URL + SEARCH_PATH, params=expected_params)
-        self.search_result_common_checks(mock_plugin, mock_list_item, anime_search, { "search": expected_search })
+        self.search_result_common_checks(mock_plugin, mock_list_item, anime_search, { "search": expected_search, "page": "2" })
 
     def test_search_success_no_search(self):
         expected_search = "TestSearch"
@@ -146,7 +146,7 @@ class TestAnimeSearch(unittest.TestCase):
         }
 
         self.mock_requests.get.assert_called_once_with(BASE_URL + SEARCH_PATH, params=expected_params)
-        self.search_result_common_checks(mock_plugin, mock_list_item, anime_search, { "search": expected_search })
+        self.search_result_common_checks(mock_plugin, mock_list_item, anime_search, { "search": '', "page": "2" })
 
     def test_search_success_page_passed_no_next(self):
         expected_search = "TestSearch"
@@ -182,4 +182,4 @@ class TestAnimeSearch(unittest.TestCase):
         }
 
         self.mock_requests.get.assert_called_once_with(BASE_URL + SEARCH_PATH, params=expected_params)
-        self.search_result_common_checks(mock_plugin, mock_list_item, anime_search, { "search": expected_search })
+        self.search_result_common_checks(mock_plugin, mock_list_item, anime_search, { "search": expected_search }, False)
