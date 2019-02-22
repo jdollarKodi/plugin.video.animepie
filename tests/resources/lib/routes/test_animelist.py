@@ -257,11 +257,11 @@ class TestAnimeList(unittest.TestCase):
         from resources.lib.routes.animelist import genre_select
 
         passed_filter_values = {
-            "genres": "Test,Test2"
+            "genres": ""
         }
 
         plugin_args = {
-            "genres": [passed_filter_values.get("genres")]
+            "genres": ["Test,Test2"]
         }
 
         mock_dialog_inst = MagicMock()
@@ -369,7 +369,10 @@ class TestAnimeList(unittest.TestCase):
 
         mock_plugin = type('', (), {})
         mock_plugin.args = {
-            "page": "1"
+            "season": ["Summer"],
+            "year": ["2018"],
+            "genres": ["Test1,Test2"],
+            "page": ["1"]
         }
         mock_plugin.handle = handle_val
         mock_plugin.url_for = Mock(return_value=mock_url)
@@ -390,7 +393,21 @@ class TestAnimeList(unittest.TestCase):
         from resources.lib.routes.animelist import anime_list
         anime_list()
 
-        expected_list_item_calls = [
+        self.mock_requests.get.assert_called_once_with(
+            'https://api.animepie.to/Anime/AnimeMain/List',
+            params={
+                'sort': '1',
+                'website': '',
+                'genres': 'Test1,Test2',
+                'season': 'Summer',
+                'limit': '15',
+                'year': '2018',
+                'sort2': '', 
+                'page': '1'
+            }
+        )
+
+        self.mock_xbmc_gui.ListItem.assert_has_calls([
             call('Gintama.: Shirogane no Tamashii-hen 2'),
             call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
             call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
@@ -401,12 +418,10 @@ class TestAnimeList(unittest.TestCase):
             call().setArt({'icon': 'https://myanimelist.cdn-dena.com/images/anime/1518/95051.jpg'}),
             call().setInfo(infoLabels={'plot': 'Second Season of the final arc of Gintama.'}, type='video'),
             call('Next Page')
-        ]
-
-        self.mock_xbmc_gui.ListItem.assert_has_calls(expected_list_item_calls)
+        ])
 
         # Need to check for order of list items added
-        expected_calls = [
+        self.mock_xbmc_plugin.addDirectoryItem.assert_has_calls([
             call(
                 handle_val,
                 mock_url,
@@ -432,8 +447,7 @@ class TestAnimeList(unittest.TestCase):
                 True
             ),
         ]
-        
-        self.mock_xbmc_plugin.addDirectoryItem.assert_has_calls(expected_calls)
+)
 
     def test_successful_retrieval_no_next_on_last_page(self):
         handle_val = "Random"
@@ -441,7 +455,10 @@ class TestAnimeList(unittest.TestCase):
 
         mock_plugin = type('', (), {})
         mock_plugin.args = {
-            "page": "8"
+            "season": ["Summer"],
+            "year": ["2018"],
+            "genres": ["Test1,Test2"],
+            "page": ["8"]
         }
         mock_plugin.handle = handle_val
         mock_plugin.url_for = Mock(return_value=mock_url)
@@ -476,6 +493,19 @@ class TestAnimeList(unittest.TestCase):
 
         self.assertEquals(self.mock_xbmc_gui.ListItem.call_count, 3)
         self.mock_xbmc_gui.ListItem.assert_has_calls(expected_list_item_calls)
+        self.mock_requests.get.assert_called_once_with(
+            'https://api.animepie.to/Anime/AnimeMain/List',
+            params={
+                'sort': '1',
+                'website': '',
+                'genres': 'Test1,Test2',
+                'season': 'Summer',
+                'limit': '15',
+                'year': '2018',
+                'sort2': '', 
+                'page': '8'
+            }
+        )
 
         # Need to check for order of list items added
         expected_calls = [

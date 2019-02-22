@@ -134,7 +134,9 @@ def genre_select():
 
     res = Dialog().multiselect("Select Genres", list_of_genres)
 
-    if res != None:
+    if res == None:
+        args[GENRES_ARG_KEY] = ""
+    else:
         args[GENRES_ARG_KEY] = ",".join(list(map(lambda i: list_of_genres[i], res)))
 
     _display_filter_menu_items(plugin, args)
@@ -214,7 +216,7 @@ def anime_list():
 
     are_pages_remaining = math.ceil(float(json_data["data"]["count"]) / float(params["limit"])) > int(params.get("page"))
     if (are_pages_remaining):
-        next_page_params = params
+        next_page_params = params.copy()
         next_page_params.update({ "page": str(int(params.get("page")) + 1) })
 
         addDirectoryItem(
