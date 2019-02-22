@@ -18,7 +18,7 @@ def generate_routes(plugin):
 
 def anime_search():
     plugin = get_router_instance()
-    search_value = plugin.args["search"][0] if "search" in plugin.args else ""
+    search_value = plugin.args["name"][0] if "name" in plugin.args else ""
     page = plugin.args["page"][0] if "page" in plugin.args else "1"
 
     params = {
@@ -49,7 +49,7 @@ def anime_search():
 
     are_pages_remaining = math.ceil(float(json_data["data"]["count"]) / float(params.get("limit"))) > int(page)
     if (are_pages_remaining):
-        next_page_params = { "page": page, "search": search_value }
+        next_page_params = { "page": page, "name": search_value }
         next_page_params.update({ "page": str(int(params.get("page")) + 1) })
 
         addDirectoryItem(

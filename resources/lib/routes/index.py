@@ -4,6 +4,7 @@ from xbmcplugin import addDirectoryItem, endOfDirectory
 
 from resources.lib.router_factory import get_router_instance
 from resources.lib.routes.animelist import filter_screen
+from resources.lib.routes.searchfilter import search_filter
 
 def generate_routes(main_plugin):
     main_plugin.add_route(index, "/")
@@ -18,5 +19,5 @@ def index():
     search_str = ADDON.getLocalizedString(32003)
 
     addDirectoryItem(plugin.handle, plugin.url_for(filter_screen), ListItem(anime_list_str), True)
-    addDirectoryItem(plugin.handle, plugin.url_for_path("/search"), ListItem(search_str), True)
+    addDirectoryItem(plugin.handle, plugin.url_for(search_filter), ListItem(search_str), True)
     endOfDirectory(plugin.handle)

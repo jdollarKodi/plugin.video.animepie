@@ -85,7 +85,7 @@ class TestAnimeSearch(unittest.TestCase):
         mock_plugin = type('', (), {})
         mock_plugin.handle = "Test"
         mock_plugin.args = {
-            "search": [expected_search]
+            "name": [expected_search]
         }
 
         mock_plugin.url_for = MagicMock()
@@ -113,7 +113,7 @@ class TestAnimeSearch(unittest.TestCase):
         }
 
         self.mock_requests.get.assert_called_once_with(BASE_URL + SEARCH_PATH, params=expected_params)
-        self.search_result_common_checks(mock_plugin, mock_list_item, anime_search, { "search": expected_search, "page": "2" })
+        self.search_result_common_checks(mock_plugin, mock_list_item, anime_search, { "name": expected_search, "page": "2" })
 
     def test_search_success_no_search(self):
         expected_search = "TestSearch"
@@ -146,14 +146,14 @@ class TestAnimeSearch(unittest.TestCase):
         }
 
         self.mock_requests.get.assert_called_once_with(BASE_URL + SEARCH_PATH, params=expected_params)
-        self.search_result_common_checks(mock_plugin, mock_list_item, anime_search, { "search": '', "page": "2" })
+        self.search_result_common_checks(mock_plugin, mock_list_item, anime_search, { "name": '', "page": "2" })
 
     def test_search_success_page_passed_no_next(self):
         expected_search = "TestSearch"
         mock_plugin = type('', (), {})
         mock_plugin.handle = "Test"
         mock_plugin.args = {
-            "search": [expected_search],
+            "name": [expected_search],
             "page": ["5"]
         }
 
@@ -182,4 +182,4 @@ class TestAnimeSearch(unittest.TestCase):
         }
 
         self.mock_requests.get.assert_called_once_with(BASE_URL + SEARCH_PATH, params=expected_params)
-        self.search_result_common_checks(mock_plugin, mock_list_item, anime_search, { "search": expected_search }, False)
+        self.search_result_common_checks(mock_plugin, mock_list_item, anime_search, { "name": expected_search }, False)
