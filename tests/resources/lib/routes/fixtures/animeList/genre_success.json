@@ -1,0 +1,18 @@
+{
+  "result": "ok",
+  "msg": "Get all genres success",
+  "data": [
+    {
+      "id": 1,
+      "name": "Action"
+    },
+    {
+      "id": 2,
+      "name": "Adventure"
+    },
+    {
+      "id": 3,
+      "name": "Cars"
+    }
+  ]
+}

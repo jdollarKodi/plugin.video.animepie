@@ -7,7 +7,7 @@ from xbmcgui import ListItem, Dialog
 from xbmcplugin import addDirectoryItem, endOfDirectory, setResolvedUrl
 
 from resources.lib.router_factory import get_router_instance
-from resources.lib.constants.url import BASE_URL, LIST_PATH
+from resources.lib.constants.url import BASE_URL, LIST_PATH, GENRE_PATH
 from resources.lib.routes.episodelist import episode_list
 
 ADDON = xbmcaddon.Addon()
@@ -43,19 +43,21 @@ seasons = [
 
 YEAR_ARG_KEY = "year"
 SEASON_ARG_KEY = "season"
+GENRES_ARG_KEY = "genres"
 PAGE_ARG_KEY = "page"
 
 default_filter_values = {
     YEAR_ARG_KEY: "2018",
-    SEASON_ARG_KEY: "Fall"
+    SEASON_ARG_KEY: "Fall",
+    GENRES_ARG_KEY: "",
 }
 
 def generate_routes(plugin):
     plugin.add_route(filter_screen, "/filter")
     plugin.add_route(anime_list, "/anime-list")
-    # plugin.add_route(genre_select, "/genre-select")
     plugin.add_route(year_select, "/anime-list/year-select")
     plugin.add_route(season_select, "/anime-list/season-select")
+    plugin.add_route(genre_select, "/anime-list/genre-select")
 
     return plugin
 
@@ -64,7 +66,8 @@ def _get_current_params(plugin):
 
     param_keys_with_defaults = [
         YEAR_ARG_KEY,
-        SEASON_ARG_KEY
+        SEASON_ARG_KEY,
+        GENRES_ARG_KEY
     ]
 
     for param_key in param_keys_with_defaults:
@@ -83,20 +86,6 @@ def _get_current_params(plugin):
     
     return current_params
 
-# def genre_select():
-# Genre List: https://api.animepie.to/Anime/Genres
-# data: [ 0: {id,name}]
-    # logger.debug("Genre Select")
-    # plugin = get_router_instance()
-    # filter_list_items["year"].setLabel("2")
-    # args = { "year": "2000" }
-    # args = {}
-
-    # xbmc.executebuiltin("RunPlugin(" + plugin.url_for(filter_screen, **args) + ")")
-    # plugin.args = { "year": ["2000"] }
-    # plugin.redirect("/filter")
-    # plugin.redirect(plugin.url_for(filter_screen, year="2000"))
-
 def _display_filter_menu_items(plugin, filter_values):
     generate_text = lambda label, filter_map, key: label % (filter_map[key] if key in filter_map else '')
 
@@ -110,6 +99,11 @@ def _display_filter_menu_items(plugin, filter_values):
             "filter_func": season_select,
             "label": "Season: %s",
             "key": SEASON_ARG_KEY
+        },
+        {
+            "filter_func": genre_select,
+            "label": "Genres: %s",
+            "key": GENRES_ARG_KEY
         }
     ]
 
@@ -127,6 +121,24 @@ def _display_filter_menu_items(plugin, filter_values):
         ListItem("Search"),
         True
     )
+
+def genre_select():
+    logger.debug("Genre select")
+    plugin = get_router_instance()
+    args = _get_current_params(plugin)
+
+    res = requests.get(BASE_URL + GENRE_PATH)
+    json_data = res.json()
+
+    list_of_genres = list(map(lambda genre_obj: genre_obj.get("name"), json_data.get("data")))
+
+    res = Dialog().multiselect("Select Genres", list_of_genres)
+
+    if res != None:
+        args[GENRES_ARG_KEY] = ",".join(list(map(lambda i: list_of_genres[i], res)))
+
+    _display_filter_menu_items(plugin, args)
+    endOfDirectory(plugin.handle)
 
 def year_select():
     logger.debug("Year select")

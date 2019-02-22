@@ -16,7 +16,6 @@ class TestAnimeList(unittest.TestCase):
         self.mock_xbmc_gui = MagicMock()
 
         self.mock_route_factory = MagicMock()
-        self.mock_route_factory.get_router_instance = MagicMock()
 
         modules = {
             "requests": self.mock_requests,
@@ -34,7 +33,7 @@ class TestAnimeList(unittest.TestCase):
         self.module_patcher.stop()
 
     def test_generate_routes(self):
-        from resources.lib.routes.animelist import generate_routes, filter_screen, anime_list, year_select, season_select
+        from resources.lib.routes.animelist import generate_routes, filter_screen, anime_list, year_select, season_select, genre_select
 
         mock_plugin = MagicMock()
 
@@ -45,6 +44,7 @@ class TestAnimeList(unittest.TestCase):
             call(anime_list, '/anime-list'),
             call(year_select, '/anime-list/year-select'),
             call(season_select, '/anime-list/season-select'),
+            call(genre_select, '/anime-list/genre-select')
         ])
 
     def test_get_current_params_returns_values_if_passed_in(self):
@@ -52,12 +52,14 @@ class TestAnimeList(unittest.TestCase):
 
         expected_year = "2000"
         expected_season = "Winter"
+        expected_genre = "Test,Test2"
         expected_page = "Page"
 
         mock_plugin = type('', (), {})
         mock_plugin.args = {
             "year": [expected_year],
             "season": [expected_season],
+            "genres": [expected_genre],
             "page": [expected_page],
         }
 
@@ -66,6 +68,7 @@ class TestAnimeList(unittest.TestCase):
         self.assertDictEqual(args, {
             "year": expected_year,
             "season": expected_season,
+            "genres": expected_genre,
             "page": expected_page
         }, "Returned parameter list does not match plugin.arg values")
 
@@ -74,6 +77,7 @@ class TestAnimeList(unittest.TestCase):
 
         expected_year = "2018"
         expected_season = "Fall"
+        expected_genre = ""
 
         mock_plugin = type('', (), {})
         mock_plugin.args = {}
@@ -82,17 +86,19 @@ class TestAnimeList(unittest.TestCase):
 
         self.assertDictEqual(args, {
             "year": expected_year,
-            "season": expected_season
+            "season": expected_season,
+            "genres": expected_genre
         }, "Returned parameter list does not match plugin.arg values")
 
     def test_should_create_menu_items_with_args_provided(self):
         handle_val = "Random"
         filter_value = { 
             "year": "2018",
-            "season": "Winter"
+            "season": "Winter",
+            "genres": "Test,Test2",
         }
 
-        from resources.lib.routes.animelist import _display_filter_menu_items, anime_list, year_select, season_select
+        from resources.lib.routes.animelist import _display_filter_menu_items, anime_list, year_select, season_select, genre_select
 
         mock_plugin = type('', (), {})
         mock_plugin.handle = handle_val
@@ -105,12 +111,14 @@ class TestAnimeList(unittest.TestCase):
         self.mock_xbmc_gui.ListItem.assert_has_calls([
             call("Year: 2018"),
             call("Season: Winter"),
+            call("Genres: Test,Test2"),
             call("Search")
         ])
 
         mock_plugin.url_for.assert_has_calls([
             call(year_select, **filter_value),
             call(season_select, **filter_value),
+            call(genre_select, **filter_value),
             call(anime_list, **filter_value)
         ])
         
@@ -121,7 +129,7 @@ class TestAnimeList(unittest.TestCase):
     def test_should_create_menu_items_with_empty_args(self):
         handle_val = "Random"
 
-        from resources.lib.routes.animelist import _display_filter_menu_items, anime_list, year_select, season_select
+        from resources.lib.routes.animelist import _display_filter_menu_items, anime_list, year_select, season_select, genre_select
 
         mock_plugin = type('', (), {})
         mock_plugin.handle = handle_val
@@ -134,12 +142,14 @@ class TestAnimeList(unittest.TestCase):
         self.mock_xbmc_gui.ListItem.assert_has_calls([
             call("Year: "),
             call("Season: "),
+            call("Genres: "),
             call("Search")
         ])
 
         mock_plugin.url_for.assert_has_calls([
             call(year_select),
             call(season_select),
+            call(genre_select),
             call(anime_list)
         ])
         
@@ -152,11 +162,12 @@ class TestAnimeList(unittest.TestCase):
         
         filter_values = {
             "year": "2018",
-            "season": "Fall"
+            "season": "Fall",
+            "genres": "",
         }
         filter_values.update(updated_filters)
 
-        from resources.lib.routes.animelist import anime_list, year_select, season_select
+        from resources.lib.routes.animelist import anime_list, year_select, season_select, genre_select
 
         mock_plugin = type('', (), {})
         mock_plugin.args = plugin_args
@@ -170,12 +181,14 @@ class TestAnimeList(unittest.TestCase):
         mock_plugin.url_for.assert_has_calls([
             call(year_select, **filter_values),
             call(season_select, **filter_values),
+            call(genre_select, **filter_values),
             call(anime_list, **filter_values)
         ])
 
         self.mock_xbmc_gui.ListItem.assert_has_calls([
             call("Year: " + filter_values.get("year")),
             call("Season: " + filter_values.get("season")),
+            call("Genres: " + filter_values.get("genres")),
             call("Search")
         ])
 
@@ -232,6 +245,85 @@ class TestAnimeList(unittest.TestCase):
         }
 
         self.common_filter_test(passed_filter_values, plugin_args, season_select)
+
+    def test_genre_select_calls_multiselect_and_generates_menu_items_if_none_selected(self):
+        fixture_path = self.dir_path + "/fixtures/animeList/genre_success.json"
+
+        with open(fixture_path, "r") as fixture:
+            mock_response = fixture.read()
+
+        self.mock_requests.get.return_value.json.return_value = json.loads(mock_response)
+
+        from resources.lib.routes.animelist import genre_select
+
+        passed_filter_values = {
+            "genres": "Test,Test2"
+        }
+
+        plugin_args = {
+            "genres": [passed_filter_values.get("genres")]
+        }
+
+        mock_dialog_inst = MagicMock()
+        mock_dialog_inst.multiselect.return_value = None
+        self.mock_xbmc_gui.Dialog.return_value = mock_dialog_inst
+
+        self.common_filter_test(passed_filter_values, plugin_args, genre_select)
+        mock_dialog_inst.multiselect.assert_called_once_with("Select Genres", ["Action", "Adventure", "Cars"])
+
+    def test_genre_select_calls_multiselect_and_generates_menu_items_if_single_selected(self):
+        fixture_path = self.dir_path + "/fixtures/animeList/genre_success.json"
+
+        with open(fixture_path, "r") as fixture:
+            mock_response = fixture.read()
+
+        self.mock_requests.get.return_value.json.return_value = json.loads(mock_response)
+
+        from resources.lib.routes.animelist import genre_select
+
+        passed_filter_values = {
+            "genres": "Adventure"
+        }
+
+        plugin_args = {
+            "genres": ["Test"]
+        }
+
+        mock_dialog_inst = MagicMock()
+        mock_dialog_inst.multiselect.return_value = [1]
+        self.mock_xbmc_gui.Dialog.return_value = mock_dialog_inst
+
+        genre_list = ["Action", "Adventure", "Cars"]
+
+        self.common_filter_test(passed_filter_values, plugin_args, genre_select)
+        mock_dialog_inst.multiselect.assert_called_once_with("Select Genres", genre_list)
+
+    def test_genre_select_calls_multiselect_and_generates_menu_items_if_multiple_selected(self):
+        fixture_path = self.dir_path + "/fixtures/animeList/genre_success.json"
+
+        with open(fixture_path, "r") as fixture:
+            mock_response = fixture.read()
+
+        self.mock_requests.get.return_value.json.return_value = json.loads(mock_response)
+
+        from resources.lib.routes.animelist import genre_select
+
+        passed_filter_values = {
+            "genres": "Action,Adventure"
+        }
+
+        plugin_args = {
+            "genres": ["Test"]
+        }
+
+        mock_dialog_inst = MagicMock()
+        mock_dialog_inst.multiselect.return_value = [0, 1]
+        self.mock_xbmc_gui.Dialog.return_value = mock_dialog_inst
+
+        genre_list = ["Action", "Adventure", "Cars"]
+
+        self.common_filter_test(passed_filter_values, plugin_args, genre_select)
+        mock_dialog_inst.multiselect.assert_called_once_with("Select Genres", genre_list)
 
     def test_filter_screen_generates_filter_menu_items(self):
         from resources.lib.routes.animelist import filter_screen
