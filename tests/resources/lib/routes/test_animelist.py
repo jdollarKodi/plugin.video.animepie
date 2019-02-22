@@ -396,14 +396,14 @@ class TestAnimeList(unittest.TestCase):
         self.mock_requests.get.assert_called_once_with(
             'https://api.animepie.to/Anime/AnimeMain/List',
             params={
-                'sort': '1',
+                'sort': 1,
                 'website': '',
                 'genres': 'Test1,Test2',
                 'season': 'Summer',
-                'limit': '15',
-                'year': '2018',
+                'limit': 15,
+                'year': 2018,
                 'sort2': '', 
-                'page': '1'
+                'page': 1
             }
         )
 
@@ -496,14 +496,14 @@ class TestAnimeList(unittest.TestCase):
         self.mock_requests.get.assert_called_once_with(
             'https://api.animepie.to/Anime/AnimeMain/List',
             params={
-                'sort': '1',
+                'sort': 1,
                 'website': '',
                 'genres': 'Test1,Test2',
                 'season': 'Summer',
-                'limit': '15',
-                'year': '2018',
+                'limit': 15,
+                'year': 2018,
                 'sort2': '', 
-                'page': '8'
+                'page': 8
             }
         )
 

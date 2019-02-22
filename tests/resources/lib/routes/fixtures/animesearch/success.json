@@ -1,0 +1,45 @@
+{
+  "result": "ok",
+  "msg": "Search anime list success",
+  "data": {
+    "count": 45,
+    "list": [
+      {
+        "animeID": 10202,
+        "animeListID": 8578,
+        "animeName": "Akuma no Riddle: Shousha wa Dare? Nukiuchi Test",
+        "animeEpisode": 1,
+        "backgroundSrc": "https://myanimelist.cdn-dena.com/images/anime/11/63653.jpg",
+        "animePoint": "6.64",
+        "animeSynopsis": "Unaired episode 13 of Akuma no Riddle released with the seventh Blu-ray/DVD volume.\r\n\r\nThe special will be previewed at a screening in Tokyo City on November 22, 2014. The BD/DVD will be released on December 17, 2014. ",
+        "animeGenres": "Action, Ecchi, Comedy, Shoujo Ai",
+        "animeWebSite": "myanimelist",
+        "animePremiered": ""
+      },
+      {
+        "animeID": 10292,
+        "animeListID": 8801,
+        "animeName": "Baka to Test to Shoukanjuu ",
+        "animeEpisode": 13,
+        "backgroundSrc": "https://myanimelist.cdn-dena.com/images/anime/3/50389.jpg",
+        "animePoint": "7.75",
+        "animeSynopsis": "The story centers around Akihisa Yoshii, the \"baka\" of the title. His academy rigidly divides up the student body into classes based on the results of tests. The prodigies are in the A class with reclining seats complete with air conditioning, but Akihisa is in F class, the lowest rung of the school ladder which is furnished only with low, decrepit tables and worn-out straw tatami mats. A girl named Mizuki Himeji is actually one of the smartest girls in Akihisa's sophomore year, but she had a fever on test day and was pigeonholed into the F class. Besides Mizuki (who Akihisa secretly adores), the F class also has Yuuji Sakamoto, the class president who has been Akihisa's friend and partner-in-crime since the freshman year.\r\n\r\nThe school happens to have developed experiments to summon fantasy creatures, and Akihisa decides to rally F class to take on the higher-tiered classes and seize their perks. The F class uses the summoned creatures in an all-out battle for school supremacy.",
+        "animeGenres": "Comedy, Romance, School, Super Power",
+        "animeWebSite": "myanimelist",
+        "animePremiered": "Winter 2010"
+      },
+      {
+        "animeID": 13075,
+        "animeListID": 8802,
+        "animeName": "Baka to Test to Shoukanjuu (Dub)",
+        "animeEpisode": 13,
+        "backgroundSrc": "https://myanimelist.cdn-dena.com/images/anime/3/50389.jpg",
+        "animePoint": "7.75",
+        "animeSynopsis": "The story centers around Akihisa Yoshii, the \"baka\" of the title. His academy rigidly divides up the student body into classes based on the results of tests. The prodigies are in the A class with reclining seats complete with air conditioning, but Akihisa is in F class, the lowest rung of the school ladder which is furnished only with low, decrepit tables and worn-out straw tatami mats. A girl named Mizuki Himeji is actually one of the smartest girls in Akihisa's sophomore year, but she had a fever on test day and was pigeonholed into the F class. Besides Mizuki (who Akihisa secretly adores), the F class also has Yuuji Sakamoto, the class president who has been Akihisa's friend and partner-in-crime since the freshman year.\r\n\r\nThe school happens to have developed experiments to summon fantasy creatures, and Akihisa decides to rally F class to take on the higher-tiered classes and seize their perks. The F class uses the summoned creatures in an all-out battle for school supremacy.",
+        "animeGenres": "Comedy, Romance, School, Super Power",
+        "animeWebSite": "myanimelist",
+        "animePremiered": "Winter 2010"
+      }
+    ]
+  }
+}

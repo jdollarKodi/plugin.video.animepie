@@ -192,6 +192,13 @@ def anime_list():
     }
     params.update(_get_current_params(plugin))
 
+    int_fields = ["sort", "year", "page", "limit"]
+    mapped_ints = {}
+    for x in int_fields:
+        mapped_ints[x] = int(params.get(x))
+
+    params.update(mapped_ints)
+
     res = requests.get(BASE_URL + LIST_PATH, params=params)
     json_data = res.json()
     for anime in json_data["data"]["list"]:
