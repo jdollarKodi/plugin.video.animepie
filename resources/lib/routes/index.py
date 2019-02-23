@@ -3,7 +3,7 @@ from xbmcgui import ListItem
 from xbmcplugin import addDirectoryItem, endOfDirectory
 
 from resources.lib.router_factory import get_router_instance
-from resources.lib.routes.animelist import filter_screen
+from resources.lib.routes.listfilter import filter_screen
 from resources.lib.routes.searchfilter import search_filter
 
 def generate_routes(main_plugin):

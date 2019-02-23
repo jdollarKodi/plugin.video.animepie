@@ -4,6 +4,7 @@ from resources.lib.routes.episodelist import generate_routes as generate_episode
 from resources.lib.routes.videosources import generate_routes as generate_video_sources_routes
 from resources.lib.routes.playsource import generate_routes as generate_play_source_routes
 from resources.lib.routes.animesearch import generate_routes as generate_anime_search_routes
+from resources.lib.routes.listfilter import generate_routes as generate_list_filter_routes
 from resources.lib.routes.searchfilter import generate_routes as generate_search_filter_routes
 
 def generate_all_routes(plugin):
@@ -14,6 +15,7 @@ def generate_all_routes(plugin):
       generate_video_sources_routes,
       generate_play_source_routes,
       generate_anime_search_routes,
+      generate_list_filter_routes,
       generate_search_filter_routes
   ]
 

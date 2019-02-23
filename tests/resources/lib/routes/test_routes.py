@@ -9,6 +9,7 @@ class TestRoutes(unittest.TestCase):
         self.mock_video_sources = MagicMock()
         self.mock_play_source = MagicMock()
         self.mock_anime_search = MagicMock()
+        self.mock_list_filter = MagicMock()
         self.mock_search_filter = MagicMock()
 
         modules = {
@@ -18,6 +19,7 @@ class TestRoutes(unittest.TestCase):
             "resources.lib.routes.videosources": self.mock_video_sources,
             "resources.lib.routes.playsource": self.mock_play_source,
             "resources.lib.routes.animesearch": self.mock_anime_search,
+            "resources.lib.routes.listfilter": self.mock_list_filter,
             "resources.lib.routes.searchfilter": self.mock_search_filter,
         }
 
@@ -41,6 +43,7 @@ class TestRoutes(unittest.TestCase):
             self.mock_video_sources,
             self.mock_play_source,
             self.mock_anime_search,
+            self.mock_list_filter,
             self.mock_search_filter,
         ]
 
